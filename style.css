@@ -531,65 +531,39 @@ nav a:hover { color: var(--accent-blue); }
    ========================================= */
 
 @media (max-width: 768px) {
-    /* 1. ضبط مساحة الهيرو وتوسيط المحتوى */
+    /* إجبار الهيرو على التوسط وعدم التداخل */
     .hero.dark-section {
-        padding: 120px 20px 50px 20px !important;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+        padding-top: 140px !important; 
+        padding-bottom: 50px !important;
     }
 
-    /* 2. منع تداخل أزرار الهيدر (Contact me / عربي) */
-    .hero-btns {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin-bottom: 30px; /* دفع النص للأسفل لكي لا يتصادموا */
-    }
-
-    /* 3. تصغير النصوص بشكل متناسق مع الشاشة */
+    /* تصغير العناوين عشان ما تطلع بره الشاشة */
     .hero h1 { 
-        font-size: 7vw !important; /* حجم الخط يعتمد على عرض الشاشة */
-        margin-top: 20px;
+        font-size: 26px !important; 
+        line-height: 1.2 !important;
     }
     .hero h2 { 
-        font-size: 5vw !important; 
-        margin-bottom: 30px;
+        font-size: 18px !important; 
     }
 
-    /* 4. "المسطرة": الحفاظ على السطر الواحد للأزرار السفلية */
+    /* السطر الواحد السحري - تأكدي من هذه القيم */
     .hero-actions {
         display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        justify-content: center;
-        align-items: center;
-        gap: 2vw; /* مسافة مرنة بين العناصر */
-        width: 100%;
-        margin-top: 20px;
+        flex-direction: row !important; /* جنب بعض */
+        flex-wrap: nowrap !important;   /* ممنوع ينزلون تحت */
+        justify-content: center !important;
+        gap: 8px !important;
+        width: 100% !important;
     }
 
-    /* 5. موازنة حجم زر Get in Touch مع الأيقونات */
     .btn-outline {
-        padding: 10px 15px !important;
-        font-size: 3vw !important; /* خط مرن */
+        padding: 8px 12px !important;
+        font-size: 12px !important;
         white-space: nowrap !important;
-        border-width: 1px !important;
     }
 
-    /* 6. ضبط حجم مربعات السوشيال ميديا */
     .social-icon {
-        width: 35px !important;
-        height: 35px !important;
-        flex-shrink: 0; /* منع المربع من الانكماش */
-    }
-
-    /* 7. ترتيب قسم الخدمات تحت بعضه بوضوح */
-    .services-row {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        align-items: center;
+        width: 32px !important;
+        height: 32px !important;
     }
 }
