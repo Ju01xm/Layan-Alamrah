@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog — Layan Alamrah</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="blogStyle.css">
+</head>
+<body>
+
+    <header class="blog-header">
+        <a href="index.html" class="back-link" id="blogBack">&larr; Back to Portfolio</a>
+        
+        <div class="blog-brand">
+            <span class="brand-name">LAYAN</span>
+            <span class="brand-sub">ALAMRAH</span>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <button id="langToggle" class="btn-lang" style="color: #fff; border-color: #fff;">عربي</button>
+        </div>
+    </header>
+
+    <section class="blog-hero">
+        <div class="hero-label" id="heroLabel">Knowledge Newsletter</div>
+        <h1 class="blog-hero-title" id="heroTitle">Articles on Marketing<br>& Corporate Comms</h1>
+        <p class="blog-hero-desc" id="heroDesc">Weekly insights and analysis in brand building and communication management.</p>
+        
+        <div class="hero-stats">
+            <div class="stat-item">
+                <span class="stat-num" id="postCount">0</span>
+                <span class="stat-label" id="statArticles">Articles</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-num" id="statWeekly">Weekly</span>
+                <span class="stat-label" id="statUpdates">Updates</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="posts-section">
+        <div class="posts-grid" id="postsGrid">
+            </div>
+        
+        <div class="empty-state" id="emptyState" style="display:none">
+            <p id="emptyStateText">No articles yet. Check back soon!</p>
+        </div>
+    </section>
+
+    <div class="modal-overlay" id="postViewModal">
+        <div class="post-view-modal">
+            <button class="close-post-view" id="closePostView">✕ Close</button>
+            <article class="newsletter-article" id="articleContent">
+                </article>
+        </div>
+    </div>
+
+    <script src="blogScript.js"></script>
+</body>
+</html>
