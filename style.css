@@ -529,45 +529,46 @@ nav a:hover { color: var(--accent-blue); }
 /* =========================================
    9. التجاوب مع الشاشات (Responsive)
    ========================================= */
-/* --- تحديث شامل للجوال للموقع الأساسي --- */
 @media (max-width: 768px) {
-    /* تصغير المسافات العلوية */
+    /* تصغير القسم العلوي قليلاً ليعطي مساحة */
     .hero.dark-section {
-        padding: 8rem 1.5rem 4rem 1.5rem !important;
-        text-align: center;
+        padding: 7rem 1rem 3rem 1rem !important;
     }
 
-    /* تصغير الخطوط عشان تكفي الشاشة */
-    .hero h1 { font-size: 1.8rem; line-height: 1.3; }
-    .hero h2 { font-size: 1.4rem; }
+    /* إجبار العناصر على البقاء في سطر واحد (نفس شكل الويب) */
+    .hero-actions {
+        display: flex !important;
+        flex-direction: row !important; /* جنب بعض */
+        flex-wrap: nowrap !important;   /* ممنوع النزول لسطر جديد */
+        justify-content: center;        /* توسيط في نصف الشاشة */
+        align-items: center;
+        gap: 8px; /* مسافة صغيرة جداً بين الزر والأيقونات */
+        width: 100%;
+    }
 
+    /* تصغير زر التواصل ليتناسب مع السطر */
     .btn-outline {
-        padding: 0.6rem 1rem;
-        font-size: 0.85rem;
-        white-space: nowrap;
+        padding: 8px 15px !important; /* تصغير الحشوة الداخلية */
+        font-size: 11px !important;    /* تصغير الخط */
+        white-space: nowrap !important;
+        border-radius: 15px;
+    }
+
+    /* تصغير المربعات البيضاء (الأيقونات) */
+    .social-squares {
+        display: flex;
+        gap: 5px; /* تقليل المسافة بين المربعات */
     }
 
     .social-icon {
-        width: 35px;
-        height: 35px;
+        width: 28px !important;  /* حجم صغير جداً للمربع */
+        height: 28px !important;
+        border-radius: 5px;
     }
 
-    /* تعديل كروت الخدمات والمدونة لتناسب العرض */
-    .services-row, .blog-grid {
-        display: grid;
-        grid-template-columns: 1fr; /* كرت واحد في كل سطر */
-        gap: 1.5rem;
-    }
-
-    
-    .hero-actions {
-        flex-wrap: nowrap !important; /* يمنع نزول العناصر لسطر جديد مهما حدث */
-        justify-content: center;
-    }
-
-    /* التأكد من أن الصور لا تخرج عن الإطار */
-    img {
-        max-width: 100%;
-        height: auto;
+    /* تصغير الأيقونات نفسها داخل المربعات */
+    .social-icon svg {
+        width: 14px !important;
+        height: 14px !important;
     }
 }
