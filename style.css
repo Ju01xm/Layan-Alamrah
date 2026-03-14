@@ -664,3 +664,32 @@ nav a:hover { color: var(--accent-blue); }
         flex: 0 0 120px !important; /* تثبيت عرض الكرت الواحد عشان ما ينضغط */
         text-align: center !important;
     }
+
+/* --- إعدادات تأثير الآلة الكاتبة --- */
+.typewriter-h2 {
+    font-size: 25px !important;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 15px; /* مسافة بين النص الثابت والمتحرك */
+    padding: 10px 0;
+}
+
+/* لون الكلمات اللي تتغير (أزرق ليان) */
+.typing-text {
+    color: var(--blue);
+    font-weight: bold;
+}
+
+/* مؤشر الكتابة اللي يطفي ويشتغل */
+.cursor {
+    display: inline-block;
+    color: var(--text-white);
+    animation: blink 0.75s step-end infinite;
+}
+
+@keyframes blink {
+    from, to { opacity: 1; }
+    50% { opacity: 0; }
+}
