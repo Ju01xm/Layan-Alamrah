@@ -863,6 +863,8 @@ nav a:hover {
         color: rgba(255, 255, 255, 0.8) !important;
         letter-spacing: 1px;
         text-align: left !important;
+       padding-top: 10;
+       padding-bottom: 20;
     }
 
     html[dir="rtl"] .tools-row h3,
