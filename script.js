@@ -185,6 +185,74 @@ function loadBlogPreviews() {
     });
 }
 
+// 1. تحديد الكلمات حسب اللغة
+function getPhrases() {
+    // 1. فحص لغة الموقع الحالية بذكاء (سواء من اتجاه الصفحة أو التخزين)
+    const isArabic = document.documentElement.dir === 'rtl' || localStorage.getItem('lang') === 'ar' || document.body.classList.contains('rtl');
+    
+    // 2. إجبار النص الثابت (I have expertise in) إنه يتغير فوراً مع اللغة
+    const staticText = document.getElementById('static-expertise');
+    if(staticText) {
+        staticText.textContent = isArabic ? staticText.getAttribute('data-ar') : staticText.getAttribute('data-en');
+    }
+
+    // 3. إرجاع الكلمات حسب اللغة
+    return isArabic ? [
+        "إدارة العلامات التجارية",
+        "التواصل المؤسسي",
+        "التسويق",
+        "صناعة المحتوى"
+    ] : [
+        "Branding",
+        "Corporate Communication",
+        "Marketing",
+        "Content Creation"
+    ];
+}
+
+// 2. تشغيل تأثير الآلة الكاتبة
+const typewriterElement = document.getElementById('typewriter');
+let phraseIndex = 0;
+let charIndex = 0;
+let isDeleting = false;
+
+function typeEffect() {
+    if (!typewriterElement) return; // عشان ما يطلع خطأ بصفحات ثانية
+
+    const phrases = getPhrases();
+    const currentPhrase = phrases[phraseIndex];
+    
+    if (isDeleting) {
+        // مسح الحروف
+        typewriterElement.textContent = currentPhrase.substring(0, charIndex - 1);
+        charIndex--;
+    } else {
+        // كتابة الحروف
+        typewriterElement.textContent = currentPhrase.substring(0, charIndex + 1);
+        charIndex++;
+    }
+
+    // سرعة الكتابة والمسح
+    let typeSpeed = isDeleting ? 40 : 100;
+
+    if (!isDeleting && charIndex === currentPhrase.length) {
+        typeSpeed = 2000; // وقف ثانيتين لما تخلص الكلمة عشان تنقري
+        isDeleting = true;
+    } else if (isDeleting && charIndex === 0) {
+        isDeleting = false;
+        phraseIndex = (phraseIndex + 1) % phrases.length;
+        typeSpeed = 400; // وقف شوي قبل تبدأ الكلمة الجديدة
+    }
+
+    setTimeout(typeEffect, typeSpeed);
+}
+
+// تشغيل الفنكشن أول ما يفتح الموقع
+document.addEventListener("DOMContentLoaded", function() {
+    typeEffect();
+});
+
+
 // ==========================================
 // 4. تشغيل الأكواد الأساسية
 // ==========================================
