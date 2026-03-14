@@ -217,7 +217,7 @@ nav a:hover { color: var(--accent-blue); }
 }
 
 .typing-text {
-    color: var(--accent-blue);
+    color: #FFFFFF;
     font-weight: bold;
 }
 
