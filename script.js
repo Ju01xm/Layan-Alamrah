@@ -288,3 +288,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 });
+
+
+// ==========================================
+// تشغيل قائمة الهامبرجر للموبايل
+// ==========================================
+document.addEventListener("DOMContentLoaded", function() {
+    const menuToggle = document.getElementById('mobile-menu');
+    const navWrapper = document.getElementById('nav-wrapper');
+    const navLinks = document.querySelectorAll('.nav-wrapper nav a');
+
+    if(menuToggle && navWrapper) {
+        // فتح وإغلاق القائمة عند الضغط على الهامبرجر
+        menuToggle.addEventListener('click', function() {
+            menuToggle.classList.toggle('is-active');
+            navWrapper.classList.toggle('active');
+            
+            // قفل السكرول حق الصفحة الرئيسية لما تنفتح القائمة
+            if(navWrapper.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // إغلاق القائمة تلقائياً لما تضغطين على أي رابط
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                menuToggle.classList.remove('is-active');
+                navWrapper.classList.remove('active');
+                document.body.style.overflow = 'auto'; // إرجاع السكرول
+            });
+        });
+    }
+});
