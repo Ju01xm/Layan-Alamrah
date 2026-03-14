@@ -641,3 +641,26 @@ nav a:hover { color: var(--accent-blue); }
         margin: 0 auto !important;
     }
 }
+
+/* --- 7. جعل الأدوات تمرير أفقي (Scroll) --- */
+    .tools-row {
+        display: flex !important;
+        flex-direction: row !important; /* صف واحد */
+        overflow-x: auto !important;   /* تفعيل السكرول الأفقي */
+        flex-wrap: nowrap !important;  /* ممنوع النزول لسطر جديد */
+        gap: 15px !important;
+        padding: 20px 10px !important;
+        width: 100% !important;
+        -webkit-overflow-scrolling: touch; /* سكرول ناعم في الآيفون */
+        scrollbar-width: none; /* إخفاء شريط السكرول في فايرفوكس */
+    }
+
+    /* إخفاء شريط السكرول في كروم وسفاري لمظهر أنظف */
+    .tools-row::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tool-card {
+        flex: 0 0 120px !important; /* تثبيت عرض الكرت الواحد عشان ما ينضغط */
+        text-align: center !important;
+    }
