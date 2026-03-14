@@ -74,21 +74,34 @@
         </div>
 
         <div class="tools-row">
-            <h3 id="toolsTitle">CORE<br>TOOLS</h3>
-            <div class="tools-icons">
-                <span class="tool-box">Ai</span>
-                <span class="tool-box">Ps</span>
-                <span class="tool-box">Id</span>
-                <div class="tool-item"><img src="images/office-nobg.png" alt="Office" class="custom-tool-img"></div>
-                <div class="tool-item">
-                    <img src="https://cdn.simpleicons.org/figma/white" alt="Figma" class="tool-svg">
-                    <span class="tool-text">Figma</span>
+            <h3 id="toolsTitle">CORE TOOLS</h3>
+
+            <div class="tools-slider-container">
+
+                <button class="scroll-arrow"
+                    onclick="document.getElementById('toolsScroll').scrollBy({left: -150, behavior: 'smooth'})">❮</button>
+
+                <div class="tools-icons" id="toolsScroll">
+                    <span class="tool-box">Ai</span>
+                    <span class="tool-box">Ps</span>
+                    <span class="tool-box">Id</span>
+                    <div class="tool-item"><img src="images/office-nobg.png" alt="Office" class="custom-tool-img"></div>
+                    <div class="tool-item">
+                        <img src="https://cdn.simpleicons.org/figma/white" alt="Figma" class="tool-svg">
+                        <span class="tool-text">Figma</span>
+                    </div>
+                    <div class="tool-item"><img src="images/canva-removebg-preview.png" alt="Canva"
+                            class="custom-tool-img"></div>
+                    <div class="tool-item">
+                        <img src="https://cdn.simpleicons.org/googleanalytics/white" alt="Google Analytics"
+                            class="tool-svg">
+                        <div class="stacked-text"><span>Google</span><span>Analytics</span></div>
+                    </div>
                 </div>
-                <div class="tool-item"><img src="images/canva-removebg-preview.png" alt="Canva" class="custom-tool-img"></div>
-                <div class="tool-item">
-                    <img src="https://cdn.simpleicons.org/googleanalytics/white" alt="Google Analytics" class="tool-svg">
-                    <div class="stacked-text"><span>Google</span><span>Analytics</span></div>
-                </div>
+
+                <button class="scroll-arrow"
+                    onclick="document.getElementById('toolsScroll').scrollBy({left: 150, behavior: 'smooth'})">❯</button>
+
             </div>
         </div>
     </section>
