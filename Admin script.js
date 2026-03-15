@@ -1,6 +1,6 @@
 /* ==========================================
    ADMIN SCRIPT — Layan Alamrah Portfolio
-   Bilingual EN/AR editor + Firestore writes + Blog + Theme/Images
+   Bilingual EN/AR editor + Smart Sync (Images/Colors/Links)
    ========================================== */
 
 // ==========================================
@@ -39,7 +39,8 @@ async function loadFirebase() {
 // ==========================================
 const DEFAULTS = {
     en: {
-        theme: { accentColor: '#4052FF' }, // اللون الافتراضي
+        theme: { accentColor: '#4052FF' }, 
+        titles: { about: 'ABOUT ME', success: 'SUCCESS STORIES', blog: 'MY BLOGS', tools: 'CORE TOOLS' },
         hero: { greeting: "HI! I'M LAYAN ALAMRAH", title1: "I'M A BRAND & CORPORATE", title2: "COMMUNICATION PROFESSIONAL", btnText: "Get in Touch →", bgImage: "" },
         services: [
             { num: '#01', title: 'Brand\nManagement' }, { num: '#02', title: 'Content\nStrategy' },
@@ -63,7 +64,8 @@ const DEFAULTS = {
         footer: { title: 'Get in Touch', email: '', linkedin: '', twitter: '', insta: '' },
     },
     ar: {
-        theme: { accentColor: '#4052FF' }, // اللون الافتراضي
+        theme: { accentColor: '#4052FF' }, 
+        titles: { about: 'نبذة عني', success: 'قصص النجاح', blog: 'المدونة', tools: 'الأدوات الأساسية' },
         hero: { greeting: "مرحباً! أنا ليان العمرة", title1: "متخصصة في الاتصال", title2: "المؤسسي والعلامة التجارية", btnText: "تواصلي معي ←", bgImage: "" },
         services: [
             { num: '#01', title: 'إدارة\nالعلامة التجارية' }, { num: '#02', title: 'استراتيجية\nالمحتوى' },
@@ -185,7 +187,7 @@ async function initAdmin() {
 }
 
 // ==========================================
-// 5. التبديل بين اللغات والأقسام (UI Controls)
+// 5. التبديل (UI Controls)
 // ==========================================
 const META = {
     hero: { title: 'الهوية والهيرو', sub: 'تعديل الألوان، صورة الهيرو، والنصوص' },
@@ -240,18 +242,28 @@ function collectPanel() {
             c.hero.title2 = document.getElementById('heroTitle2').value;
             c.hero.btnText = document.getElementById('heroBtnText').value;
             
-            // حفظ اللون الأساسي
-            if (!c.theme) c.theme = {};
+            // 💡 توحيد اللون الأساسي في اللغتين تلقائياً
             if (document.getElementById('themeColor')) {
-                c.theme.accentColor = document.getElementById('themeColor').value;
+                const colorVal = document.getElementById('themeColor').value;
+                if (!content.en.theme) content.en.theme = {};
+                if (!content.ar.theme) content.ar.theme = {};
+                content.en.theme.accentColor = colorVal;
+                content.ar.theme.accentColor = colorVal;
             }
             break;
         case 'footer':
             c.footer.title = document.getElementById('footerTitle').value;
-            c.footer.email = document.getElementById('footerEmail').value;
-            c.footer.linkedin = document.getElementById('footerLinkedin').value;
-            c.footer.twitter = document.getElementById('footerTwitter').value;
-            c.footer.insta = document.getElementById('footerInsta').value;
+            
+            // 💡 توحيد روابط التواصل في اللغتين تلقائياً
+            const emailVal = document.getElementById('footerEmail').value;
+            const linkedinVal = document.getElementById('footerLinkedin').value;
+            const twitterVal = document.getElementById('footerTwitter').value;
+            const instaVal = document.getElementById('footerInsta').value;
+
+            content.en.footer.email = emailVal; content.ar.footer.email = emailVal;
+            content.en.footer.linkedin = linkedinVal; content.ar.footer.linkedin = linkedinVal;
+            content.en.footer.twitter = twitterVal; content.ar.footer.twitter = twitterVal;
+            content.en.footer.insta = instaVal; content.ar.footer.insta = instaVal;
             break;
     }
 }
@@ -294,12 +306,10 @@ function renderHero() {
     document.getElementById('heroTitle2').value = C().hero.title2 || '';
     document.getElementById('heroBtnText').value = C().hero.btnText || '';
     
-    // إعدادات اللون
     if (document.getElementById('themeColor')) {
         document.getElementById('themeColor').value = C().theme?.accentColor || '#4052FF';
     }
     
-    // إعدادات صورة الهيرو
     if (document.getElementById('heroBgPreview')) {
         const previewImg = document.getElementById('heroBgPreview');
         if (C().hero.bgImage) {
@@ -311,26 +321,30 @@ function renderHero() {
     }
 }
 
-// دالة رفع وحذف صورة الهيرو
+// 💡 رفع صورة الهيرو للغتين معاً
 window.uploadHeroBg = function(e) {
     const file = e.target.files[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = (event) => { 
-        content[editLang].hero.bgImage = event.target.result; 
+        const imgData = event.target.result;
+        content.en.hero.bgImage = imgData; 
+        content.ar.hero.bgImage = imgData; 
+        
         if (document.getElementById('heroBgPreview')) {
-            document.getElementById('heroBgPreview').src = event.target.result;
+            document.getElementById('heroBgPreview').src = imgData;
             document.getElementById('heroBgPreview').style.display = 'block';
         }
     };
     reader.readAsDataURL(file);
 };
 window.removeHeroBg = function() {
-    content[editLang].hero.bgImage = '';
+    content.en.hero.bgImage = '';
+    content.ar.hero.bgImage = '';
     if (document.getElementById('heroBgPreview')) {
         document.getElementById('heroBgPreview').src = '';
         document.getElementById('heroBgPreview').style.display = 'none';
     }
-    document.getElementById('heroImgInput').value = ''; // تصفير زر الرفع
+    document.getElementById('heroImgInput').value = ''; 
 };
 
 function renderServices() {
@@ -342,17 +356,31 @@ function renderServices() {
             <button class="del-btn" onclick="deleteService(${i})">🗑</button></div>
             <div class="fg2">
                 <div class="f"><label>${editLang === 'ar' ? 'الرقم' : 'Number'}</label>
-                <input type="text" value="${s.num}" onchange="content['${editLang}'].services[${i}].num=this.value"/></div>
+                <input type="text" value="${s.num}" onchange="content.en.services[${i}].num=this.value; content.ar.services[${i}].num=this.value;"/></div>
                 <div class="f"><label>${editLang === 'ar' ? 'الاسم (/ للسطر الثاني)' : 'Title (/ for line break)'}</label>
                 <input type="text" value="${s.title.replace('\n', ' / ')}" onchange="content['${editLang}'].services[${i}].title=this.value.replace(' / ','\\n')"/></div>
             </div>`;
         el.appendChild(d);
     });
 }
-window.addService = () => { C().services.push({ num: `#0${C().services.length + 1}`, title: editLang === 'ar' ? 'خدمة جديدة' : 'New Service' }); renderServices(); };
-window.deleteService = i => { if (C().services.length <= 1) return toast('يجب الإبقاء على خدمة', 'err'); C().services.splice(i, 1); renderServices(); };
+// 💡 إضافة وحذف الخدمات من اللغتين معاً
+window.addService = () => { 
+    const nextNum = `#0${content.en.services.length + 1}`;
+    content.en.services.push({ num: nextNum, title: 'New Service' }); 
+    content.ar.services.push({ num: nextNum, title: 'خدمة جديدة' }); 
+    renderServices(); 
+};
+window.deleteService = i => { 
+    if (content.en.services.length <= 1) return toast('يجب الإبقاء على خدمة', 'err'); 
+    content.en.services.splice(i, 1); 
+    content.ar.services.splice(i, 1); 
+    renderServices(); 
+};
 
 function renderTools() {
+    if(document.getElementById('secTitleTools')) {
+        document.getElementById('secTitleTools').value = C().titles?.tools || '';
+    }
     const el = document.getElementById('toolsRep'); el.innerHTML = '';
     C().tools.forEach((t, i) => {
         const d = document.createElement('div'); d.className = 'tool-item-row';
@@ -363,28 +391,44 @@ function renderTools() {
             valueInput = `<input type="file" accept="image/*" onchange="uploadToolImg(event, ${i})" style="max-width:200px; padding: 0.3rem;" />
                           ${t.value && t.value.length > 100 ? '<span style="color:#16a34a; font-size:0.8rem; font-weight:bold;">تمت إضافة صورة ✓</span>' : ''}`;
         } else if (t.type !== 'text') {
-            valueInput = `<input type="text" dir="ltr" placeholder="slug e.g. figma" value="${t.value}" onchange="content['${editLang}'].tools[${i}].value=this.value"/>`;
+            valueInput = `<input type="text" dir="ltr" placeholder="slug e.g. figma" value="${t.value}" onchange="if(content.en.tools[${i}]) content.en.tools[${i}].value=this.value; if(content.ar.tools[${i}]) content.ar.tools[${i}].value=this.value;"/>`;
         }
 
         d.innerHTML = `
-            <select onchange="content['${editLang}'].tools[${i}].type=this.value;renderTools()">${opts}</select>
+            <select onchange="content.en.tools[${i}].type=this.value; content.ar.tools[${i}].type=this.value; renderTools()">${opts}</select>
             <input type="text" placeholder="Label" value="${t.label}" onchange="content['${editLang}'].tools[${i}].label=this.value" style="max-width:150px"/>
             ${valueInput}
             <button class="del-btn" onclick="deleteTool(${i})" style="flex-shrink:0">🗑</button>`;
         el.appendChild(d);
     });
 }
+// 💡 رفع صورة الأداة للغتين معاً
 window.uploadToolImg = function (e, i) {
     const file = e.target.files[0]; if (!file) return;
     const reader = new FileReader();
-    reader.onload = (event) => { content[editLang].tools[i].value = event.target.result; renderTools(); };
+    reader.onload = (event) => { 
+        const imgData = event.target.result;
+        if (content.en.tools[i]) content.en.tools[i].value = imgData; 
+        if (content.ar.tools[i]) content.ar.tools[i].value = imgData; 
+        renderTools(); 
+    };
     reader.readAsDataURL(file);
 };
-window.renderTools = renderTools;
-window.addTool = () => { C().tools.push({ type: 'text', label: 'New Tool', value: '' }); renderTools(); };
-window.deleteTool = i => { C().tools.splice(i, 1); renderTools(); };
+window.addTool = () => { 
+    content.en.tools.push({ type: 'text', label: 'New Tool', value: '' }); 
+    content.ar.tools.push({ type: 'text', label: 'أداة جديدة', value: '' }); 
+    renderTools(); 
+};
+window.deleteTool = i => { 
+    content.en.tools.splice(i, 1); 
+    content.ar.tools.splice(i, 1); 
+    renderTools(); 
+};
 
 function renderAbout() {
+    if(document.getElementById('secTitleAbout')) {
+        document.getElementById('secTitleAbout').value = C().titles?.about || '';
+    }
     const el = document.getElementById('aboutRep'); el.innerHTML = '';
     C().about.forEach((a, i) => {
         const d = document.createElement('div'); d.className = 'rep-item';
@@ -399,14 +443,16 @@ function renderAbout() {
 }
 
 function renderStories() {
+    if(document.getElementById('secTitleStories')) {
+        document.getElementById('secTitleStories').value = C().titles?.success || '';
+    }
     const el = document.getElementById('storiesRep'); el.innerHTML = '';
     C().stories.forEach((s, i) => {
         const d = document.createElement('div'); d.className = 'rep-item';
         
-        // واجهة رفع وحذف صورة القصة
         const imgUI = `
             <div class="f" style="background: rgba(64,82,255,0.05); padding: 10px; border-radius: 8px;">
-                <label style="color:var(--blue); font-weight:bold;">${editLang === 'ar' ? 'صورة القصة (تستبدل المربع الأزرق)' : 'Story Image (Optional)'}</label>
+                <label style="color:var(--blue); font-weight:bold;">${editLang === 'ar' ? 'صورة القصة (تتطبق على اللغتين)' : 'Story Image (Synced to both languages)'}</label>
                 <input type="file" accept="image/*" onchange="uploadStoryImg(event, ${i})" style="max-width:250px; padding: 0.3rem;" />
                 ${s.imageUrl && s.imageUrl.length > 50 ? 
                     `<div style="margin-top:8px;">
@@ -429,19 +475,35 @@ function renderStories() {
     });
 }
 
-// دوال رفع وحذف صور القصص
+// 💡 رفع وحذف صورة القصة للغتين معاً
 window.uploadStoryImg = function (e, i) {
     const file = e.target.files[0]; if (!file) return;
     const reader = new FileReader();
-    reader.onload = (event) => { content[editLang].stories[i].imageUrl = event.target.result; renderStories(); };
+    reader.onload = (event) => { 
+        const imgData = event.target.result;
+        if (content.en.stories[i]) content.en.stories[i].imageUrl = imgData; 
+        if (content.ar.stories[i]) content.ar.stories[i].imageUrl = imgData; 
+        renderStories(); 
+    };
     reader.readAsDataURL(file);
 };
 window.removeStoryImg = function(i) {
-    content[editLang].stories[i].imageUrl = ''; renderStories();
+    if (content.en.stories[i]) content.en.stories[i].imageUrl = ''; 
+    if (content.ar.stories[i]) content.ar.stories[i].imageUrl = ''; 
+    renderStories();
 };
 
-window.addStory = () => { C().stories.push({ title: editLang === 'ar' ? 'قصة جديدة' : 'New Story', text: '...', imageUrl: '' }); renderStories(); };
-window.deleteStory = i => { if (C().stories.length <= 1) return toast('يجب الإبقاء على قصة', 'err'); C().stories.splice(i, 1); renderStories(); };
+window.addStory = () => { 
+    content.en.stories.push({ title: 'New Story', text: '...', imageUrl: '' }); 
+    content.ar.stories.push({ title: 'قصة جديدة', text: '...', imageUrl: '' }); 
+    renderStories(); 
+};
+window.deleteStory = i => { 
+    if (content.en.stories.length <= 1) return toast('يجب الإبقاء على قصة', 'err'); 
+    content.en.stories.splice(i, 1); 
+    content.ar.stories.splice(i, 1); 
+    renderStories(); 
+};
 
 function renderFooter() {
     document.getElementById('footerTitle').value = C().footer.title || '';
@@ -473,6 +535,9 @@ let blogPosts = JSON.parse(localStorage.getItem('layan_blog_posts') || '[]');
 let currentBlogCover = '';
 
 window.renderAdminPosts = () => {
+    if(document.getElementById('secTitleBlog')) {
+        document.getElementById('secTitleBlog').value = C().titles?.blog || '';
+    }
     const el = document.getElementById('adminPostsRep');
     if (!el) return;
     el.innerHTML = '';

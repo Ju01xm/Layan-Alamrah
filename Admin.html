@@ -282,7 +282,7 @@
                         <div class="card-body">
                             <div class="f" style="background: rgba(64,82,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                                 <label style="color:var(--blue); font-weight:bold;">لون الموقع الأساسي (Theme Color)</label>
-                                <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">سيتم تغيير اللون الأزرق في كامل الموقع (الأزرار، العناوين، الأيقونات) لهذا اللون.</p>
+                                <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">سيتم تغيير اللون الأزرق في كامل الموقع لهذا اللون.</p>
                                 <input type="color" id="themeColor" value="#4052FF" style="width: 80px; height: 45px; cursor: pointer; border: none; border-radius: 5px; padding: 0;">
                             </div>
 
@@ -331,6 +331,10 @@
                             <h3>🛠 Core Tools</h3><span class="chevron">▼</span>
                         </div>
                         <div class="card-body">
+                            <div class="f" style="background: rgba(64,82,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                <label style="color:var(--blue); font-weight:bold;">عنوان القسم الرئيسي بالموقع (Core Tools)</label>
+                                <input type="text" id="secTitleTools" onchange="if(!content[editLang].titles) content[editLang].titles={}; content[editLang].titles.tools=this.value" />
+                            </div>
                             <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.2rem;line-height:1.6;">
                                 الأدوات المعروضة في قسم Core Tools.<br>
                                 <b>text</b> = مربع نصي (مثل Ai) &nbsp;|&nbsp; <b>image</b> = صورة مخصصة &nbsp;|&nbsp; <b>icon+text</b> = أيقونة SVG + نص
@@ -346,7 +350,13 @@
                         <div class="card-head open" onclick="toggleCard(this)">
                             <h3>👤 بطاقات About Me</h3><span class="chevron">▼</span>
                         </div>
-                        <div class="card-body" id="aboutRep"></div>
+                        <div class="card-body">
+                            <div class="f" style="background: rgba(64,82,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                <label style="color:var(--blue); font-weight:bold;">عنوان القسم الرئيسي بالموقع (About Me)</label>
+                                <input type="text" id="secTitleAbout" onchange="if(!content[editLang].titles) content[editLang].titles={}; content[editLang].titles.about=this.value" />
+                            </div>
+                            <div id="aboutRep"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -356,6 +366,10 @@
                             <h3>🏆 Success Stories</h3><span class="chevron">▼</span>
                         </div>
                         <div class="card-body">
+                            <div class="f" style="background: rgba(64,82,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                <label style="color:var(--blue); font-weight:bold;">عنوان القسم الرئيسي بالموقع (Success Stories)</label>
+                                <input type="text" id="secTitleStories" onchange="if(!content[editLang].titles) content[editLang].titles={}; content[editLang].titles.success=this.value" />
+                            </div>
                             <div id="storiesRep"></div>
                             <button class="add-btn" onclick="addStory()">+ إضافة قصة</button>
                         </div>
@@ -383,6 +397,10 @@
                             <h3>✍️ إدارة المقالات</h3><span class="chevron">▼</span>
                         </div>
                         <div class="card-body">
+                            <div class="f" style="background: rgba(64,82,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                <label style="color:var(--blue); font-weight:bold;">عنوان القسم الرئيسي بالموقع (My Blogs)</label>
+                                <input type="text" id="secTitleBlog" onchange="if(!content[editLang].titles) content[editLang].titles={}; content[editLang].titles.blog=this.value" />
+                            </div>
                             <button class="add-btn" onclick="openBlogEditor(-1)" style="margin-bottom: 1.5rem; border-color: var(--blue); color: var(--blue);">+ إضافة مقال جديد</button>
                             <div id="adminPostsRep"></div>
                         </div>

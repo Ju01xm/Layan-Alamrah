@@ -498,6 +498,17 @@ nav a:hover {
     line-height: 1.6;
 }
 
+/* تنسيق الصورة البديلة للمربع الأزرق في قصص النجاح */
+.story-image {
+    width: 100%;
+    height: 180px; 
+    object-fit: cover; 
+    border-radius: 20px;
+    margin-bottom: 1rem;
+    background-color: #111;
+}
+
+
 /* =========================================
    7. المدونة (Blog Preview)
    ========================================= */
@@ -736,7 +747,7 @@ nav a:hover {
 
     /* تصغير اللوجو في الجوال */
     .header-logo {
-        height: 30px !important;
+        height: 40px !important;
     }
 
     /* 💡 قسم الهيرو المعدل (المنحنى والظل) 💡 */
@@ -756,7 +767,7 @@ nav a:hover {
         z-index: 10 !important;
         /* يخليه فوق القسم الأبيض */
 
-        box-shadow: inset 0px -20px 100px rgba(0, 0, 0, 0.7) !important;
+        box-shadow: inset 0px -15px 40px 5px rgba(43, 43, 43, 0.8) !important;
         /* يسحب القسم اللي تحته (الأبيض) ليكون وراه */
         margin-bottom: -80px !important;
 
@@ -780,7 +791,6 @@ nav a:hover {
         padding-top: 80px !important;
     }
 
-
     .hero h1 {
         font-size: 32px !important;
         text-align: left !important;
@@ -795,10 +805,27 @@ nav a:hover {
         max-width: 95% !important;
     }
 
-    /* تكبير خط الآلة الكاتبة */
+    /* تكبير خط الآلة الكاتبة و التنسيق الجديد */
     .hero h2.typewriter-h2 {
         font-size: 22.5px !important;
         margin-bottom: 30px !important;
+        display: block !important;
+        width: 100% !important;
+        text-align: left !important;
+        line-height: 1.5 !important;
+    }
+    html[dir="rtl"] .hero h2.typewriter-h2,
+    body.rtl .hero h2.typewriter-h2 {
+        text-align: right !important;
+    }
+    #typewriter, .cursor {
+        display: inline !important;
+    }
+
+    #static-expertise {
+        width: 100%;
+        display: block;
+        margin-bottom: 8px;
     }
 
     .hero-actions {
@@ -808,11 +835,11 @@ nav a:hover {
         justify-content: flex-start !important;
         gap: 15px !important;
         margin-bottom: 30px !important;
-        padding-top: 5px !important;
+        padding-top: 10px !important;
     }
 
     .btn-outline {
-        padding: 10px 10px !important;
+        padding: 10px 20px !important;
         font-size: 14px !important;
     }
 
@@ -839,7 +866,7 @@ nav a:hover {
         min-width: 100px !important;
         text-align: center !important;
         margin-bottom: 10px !important;
-        padding-top: 0px !important;
+        padding-top: 15px !important;
     }
 
     /* الأدوات والأسهم */
@@ -851,7 +878,7 @@ nav a:hover {
         margin-top: 10px !important;
         width: 100% !important;
         box-sizing: border-box !important;
-        padding-top: 5px !important;
+        padding-top: 10px !important;
     }
 
     html[dir="rtl"] .tools-row,
@@ -860,13 +887,13 @@ nav a:hover {
     }
 
     .tools-row h3 {
-        font-size: 13px !important;
-        margin-bottom: 2px !important;
+        width: 100% !important;
+        font-size: 20px !important;
+        margin-bottom: -5px !important;
         color: rgba(255, 255, 255, 0.8) !important;
         letter-spacing: 1px;
         text-align: left !important;
-        padding-top: 10px !important;
-        padding-bottom: -20px !important;
+        padding-top: 5px !important;
     }
 
     html[dir="rtl"] .tools-row h3,
@@ -881,7 +908,7 @@ nav a:hover {
         width: 100% !important;
         gap: 5px !important;
         box-sizing: border-box !important;
-        padding-top: -10px !important;
+        margin-top: -5px !important;
     }
 
     .scroll-arrow {
@@ -962,12 +989,21 @@ nav a:hover {
         margin: 0 auto !important;
         flex: 0 0 85% !important;
     }
-}
 
-@media (max-width: 768px) {
-    #static-expertise {
-        width: 100%;
-        display: block;
-        margin-bottom: 8px;
+    .success-stories {
+        padding-left: 2 !important;
+        padding-right: 2 !important;
+    }
+
+    .prev-btn {
+        left: 0px !important;
+        padding: 5px !important;
+    }
+
+    /* 4. تثبيت السهم اليمين على الحافة */
+    .next-btn {
+        right: 0px !important;
+        padding: 5px !important;
     }
 }
+

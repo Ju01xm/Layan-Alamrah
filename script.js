@@ -50,6 +50,21 @@ async function loadSiteData() {
                 document.documentElement.style.setProperty('--accent-blue', data.theme.accentColor);
             }
 
+            // --- 📌 تحديث العناوين الرئيسية للأقسام ---
+            if (data.titles) {
+                const elAbout = document.getElementById('aboutTitle');
+                if (elAbout && data.titles.about) elAbout.textContent = data.titles.about;
+                
+                const elSuccess = document.getElementById('successTitle');
+                if (elSuccess && data.titles.success) elSuccess.textContent = data.titles.success;
+                
+                const elTools = document.getElementById('toolsTitle');
+                if (elTools && data.titles.tools) elTools.textContent = data.titles.tools;
+                
+                const elBlog = document.getElementById('blogTitle');
+                if (elBlog && data.titles.blog) elBlog.textContent = data.titles.blog;
+            }
+
             // --- أ. تحديث قسم About Me ---
             if (data.about && data.about.length > 0) {
                 const aboutParagraphs = document.querySelectorAll('.about-right p');
@@ -69,10 +84,8 @@ async function loadSiteData() {
                         let topContent = "";
                         let titleInBottom = "";
 
-                        // إذا العميل رفع صورة نستخدمها، وإذا لا نرجع للمربع الملون
                         if (story.imageUrl && story.imageUrl.trim() !== "") {
                             topContent = `<img src="${story.imageUrl}" alt="${story.title}" class="story-image">`;
-                            // إذا حطينا صورة، العنوان الأساسي بيختفي، فنجيب عنوان صغير فوق النص
                             titleInBottom = `<h4 style="color: var(--text-white); margin-bottom: 8px; font-size: 1.1rem;">${story.title}</h4>`;
                         } else {
                             topContent = `<div class="story-top">${story.title.replace(/\n/g, '<br>')}</div>`;
@@ -123,7 +136,6 @@ async function loadSiteData() {
                 if (heroGreeting) heroGreeting.textContent = data.hero.greeting;
                 if (heroTitle) heroTitle.innerHTML = `${data.hero.title1}<br>${data.hero.title2}`;
 
-                // إذا تم رفع صورة جديدة للهيرو من الأدمين
                 if (data.hero.bgImage && data.hero.bgImage.trim() !== "") {
                     heroSection.style.setProperty('background', `linear-gradient(rgba(5, 5, 5, 0.30), rgba(5, 5, 5, 0.98)), url('${data.hero.bgImage}')`, 'important');
                     heroSection.style.setProperty('background-size', 'cover', 'important');
@@ -213,7 +225,7 @@ function loadBlogPreviews() {
     });
 }
 
-// 1. تحديد الكلمات حسب اللغة للآلة الكاتبة
+// 1. تحديد الكلمات حسب اللغة
 function getPhrases() {
     const isArabic = document.documentElement.dir === 'rtl' || localStorage.getItem('layan_lang') === 'ar' || document.body.classList.contains('rtl');
     
@@ -258,12 +270,12 @@ function typeEffect() {
     let typeSpeed = isDeleting ? 40 : 100;
 
     if (!isDeleting && charIndex === currentPhrase.length) {
-        typeSpeed = 2000;
+        typeSpeed = 2000; 
         isDeleting = true;
     } else if (isDeleting && charIndex === 0) {
         isDeleting = false;
         phraseIndex = (phraseIndex + 1) % phrases.length;
-        typeSpeed = 400;
+        typeSpeed = 400; 
     }
 
     setTimeout(typeEffect, typeSpeed);
