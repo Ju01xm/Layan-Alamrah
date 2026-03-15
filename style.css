@@ -808,7 +808,7 @@ nav a:hover {
         justify-content: flex-start !important;
         gap: 15px !important;
         margin-bottom: 30px !important;
-        padding-top: 10px !important;
+        padding-top: 5px !important;
     }
 
     .btn-outline {
@@ -839,7 +839,7 @@ nav a:hover {
         min-width: 100px !important;
         text-align: center !important;
         margin-bottom: 10px !important;
-        padding-top: 15px !important;
+        padding-top: 10px !important;
     }
 
     /* الأدوات والأسهم */
@@ -851,7 +851,7 @@ nav a:hover {
         margin-top: 10px !important;
         width: 100% !important;
         box-sizing: border-box !important;
-        padding-top: 10px !important;
+        padding-top: 5px !important;
     }
 
     html[dir="rtl"] .tools-row,
@@ -865,7 +865,7 @@ nav a:hover {
         color: rgba(255, 255, 255, 0.8) !important;
         letter-spacing: 1px;
         text-align: left !important;
-        padding-top: 20px !important;
+        padding-top: 10px !important;
         padding-bottom: -10px !important;
     }
 
@@ -961,5 +961,13 @@ nav a:hover {
         width: 85% !important;
         margin: 0 auto !important;
         flex: 0 0 85% !important;
+    }
+}
+
+@media (max-width: 768px) {
+    #static-expertise {
+        width: 100%;
+        display: block;
+        margin-bottom: 8px;
     }
 }
