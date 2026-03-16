@@ -84,7 +84,10 @@ function renderPosts() {
 function openPost(index) {
     const post = posts[index];
     const article = document.getElementById('articleContent');
-    const htmlContent = parseContent(post.content || '');
+    
+    // ✅ المحتوى الآن HTML مباشر (من contenteditable) — لا حاجة لـ parseContent
+    const htmlContent = post.content || '';
+    
     const dict = blogDict[currentLang];
     const formattedDate = new Date(post.id).toLocaleDateString(currentLang === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 

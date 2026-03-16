@@ -1,17 +1,33 @@
 /* ==========================================
    ADMIN SCRIPT — Layan Alamrah Portfolio
-   Bilingual EN/AR editor + Smart Sync (Images/Colors/Links)
+   Fixed Image Upload using Firebase Storage
    ========================================== */
 
 // ==========================================
 // 1. إعدادات قاعدة البيانات (Firebase)
 // ==========================================
-let db = null, firestoreDoc = null, getDoc = null, setDoc = null;
+let db = null;
+let storage = null;
+
+let firestoreDoc = null;
+let getDoc = null;
+let setDoc = null;
+
+let ref = null;
+let uploadBytes = null;
+let getDownloadURL = null;
 
 async function loadFirebase() {
     try {
-        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-        const fs = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        const { initializeApp } = await import(
+            "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"
+        );
+        const fs = await import(
+            "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+        );
+        const st = await import(
+            "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js"
+        );
 
         const firebaseConfig = {
             apiKey: "AIzaSyBIxhqqk425SFWQXe6Y3KThpV83v5CJvLA",
@@ -23,13 +39,20 @@ async function loadFirebase() {
         };
 
         const app = initializeApp(firebaseConfig);
+
         db = fs.getFirestore(app);
         firestoreDoc = fs.doc;
         getDoc = fs.getDoc;
         setDoc = fs.setDoc;
+
+        storage = st.getStorage(app);
+        ref = st.ref;
+        uploadBytes = st.uploadBytes;
+        getDownloadURL = st.getDownloadURL;
+
         return true;
     } catch (e) {
-        console.warn('Firebase load failed:', e.message);
+        console.warn("Firebase load failed:", e.message);
         return false;
     }
 }
@@ -39,7 +62,7 @@ async function loadFirebase() {
 // ==========================================
 const DEFAULTS = {
     en: {
-        theme: { accentColor: '#4052FF' }, 
+        theme: { accentColor: '#4052FF' },
         titles: { about: 'ABOUT ME', success: 'SUCCESS STORIES', blog: 'MY BLOGS', tools: 'CORE TOOLS' },
         hero: { greeting: "HI! I'M LAYAN ALAMRAH", title1: "I'M A BRAND & CORPORATE", title2: "COMMUNICATION PROFESSIONAL", btnText: "Get in Touch →", bgImage: "" },
         services: [
@@ -64,7 +87,7 @@ const DEFAULTS = {
         footer: { title: 'Get in Touch', email: '', linkedin: '', twitter: '', insta: '' },
     },
     ar: {
-        theme: { accentColor: '#4052FF' }, 
+        theme: { accentColor: '#4052FF' },
         titles: { about: 'نبذة عني', success: 'قصص النجاح', blog: 'المدونة', tools: 'الأدوات الأساسية' },
         hero: { greeting: "مرحباً! أنا ليان العمرة", title1: "متخصصة في الاتصال", title2: "المؤسسي والعلامة التجارية", btnText: "تواصلي معي ←", bgImage: "" },
         services: [
@@ -121,14 +144,11 @@ async function tryLogin() {
         showErr(`🔒 مقفل — انتظري ${Math.ceil((lockUntil - Date.now()) / 60000)} دقيقة`);
         return;
     }
-
     const val = document.getElementById('passInput').value;
-
     if (val === getPassword()) {
         fails = 0; lockUntil = 0;
         localStorage.removeItem('adm_fails');
         localStorage.removeItem('adm_lock');
-
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminApp').style.display = 'block';
         initAdmin();
@@ -174,16 +194,24 @@ async function initAdmin() {
             toast('✅ تم تحميل البيانات', 'ok');
         } catch (e) {
             console.warn('Firestore read failed:', e.message);
-            content.en = JSON.parse(JSON.stringify(DEFAULTS.en)); content.ar = JSON.parse(JSON.stringify(DEFAULTS.ar));
+            content.en = JSON.parse(JSON.stringify(DEFAULTS.en));
+            content.ar = JSON.parse(JSON.stringify(DEFAULTS.ar));
             toast('⚠️ Firebase متصل لكن القراءة فشلت — تعمل بالبيانات الافتراضية', 'err');
         }
     } else {
-        content.en = JSON.parse(JSON.stringify(DEFAULTS.en)); content.ar = JSON.parse(JSON.stringify(DEFAULTS.ar));
+        content.en = JSON.parse(JSON.stringify(DEFAULTS.en));
+        content.ar = JSON.parse(JSON.stringify(DEFAULTS.ar));
         toast('⚠️ تعذّر الاتصال بـ Firebase — تعمل بالبيانات الافتراضية', 'err');
     }
 
     renderAll();
     switchPanel('hero');
+
+    // ✅ تحميل المقالات من Firestore
+    await loadBlogPosts();
+
+    // ✅ ربط أحداث الصور بعد تحميل Firebase
+    bindImageEvents();
 }
 
 // ==========================================
@@ -241,8 +269,6 @@ function collectPanel() {
             c.hero.title1 = document.getElementById('heroTitle1').value;
             c.hero.title2 = document.getElementById('heroTitle2').value;
             c.hero.btnText = document.getElementById('heroBtnText').value;
-            
-            // 💡 توحيد اللون الأساسي في اللغتين تلقائياً
             if (document.getElementById('themeColor')) {
                 const colorVal = document.getElementById('themeColor').value;
                 if (!content.en.theme) content.en.theme = {};
@@ -253,13 +279,10 @@ function collectPanel() {
             break;
         case 'footer':
             c.footer.title = document.getElementById('footerTitle').value;
-            
-            // 💡 توحيد روابط التواصل في اللغتين تلقائياً
             const emailVal = document.getElementById('footerEmail').value;
             const linkedinVal = document.getElementById('footerLinkedin').value;
             const twitterVal = document.getElementById('footerTwitter').value;
             const instaVal = document.getElementById('footerInsta').value;
-
             content.en.footer.email = emailVal; content.ar.footer.email = emailVal;
             content.en.footer.linkedin = linkedinVal; content.ar.footer.linkedin = linkedinVal;
             content.en.footer.twitter = twitterVal; content.ar.footer.twitter = twitterVal;
@@ -305,11 +328,9 @@ function renderHero() {
     document.getElementById('heroTitle1').value = C().hero.title1 || '';
     document.getElementById('heroTitle2').value = C().hero.title2 || '';
     document.getElementById('heroBtnText').value = C().hero.btnText || '';
-    
     if (document.getElementById('themeColor')) {
         document.getElementById('themeColor').value = C().theme?.accentColor || '#4052FF';
     }
-    
     if (document.getElementById('heroBgPreview')) {
         const previewImg = document.getElementById('heroBgPreview');
         if (C().hero.bgImage) {
@@ -321,30 +342,46 @@ function renderHero() {
     }
 }
 
-// 💡 رفع صورة الهيرو للغتين معاً
-window.uploadHeroBg = function(e) {
-    const file = e.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => { 
-        const imgData = event.target.result;
-        content.en.hero.bgImage = imgData; 
-        content.ar.hero.bgImage = imgData; 
-        
-        if (document.getElementById('heroBgPreview')) {
-            document.getElementById('heroBgPreview').src = imgData;
-            document.getElementById('heroBgPreview').style.display = 'block';
-        }
-    };
-    reader.readAsDataURL(file);
+// ==========================================
+// دالة مساعدة: رفع أي صورة لـ Firebase Storage
+// ==========================================
+async function uploadToStorage(file, folder) {
+    if (!storage) throw new Error("Firebase Storage غير متصل");
+    const filePath = `${folder}/${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, filePath);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+}
+
+// ==========================================
+// رفع صورة الهيرو
+// ==========================================
+window.uploadHeroBg = async function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!storage) { toast("❌ Firebase Storage غير متصل", "err"); return; }
+    try {
+        toast("⏳ جاري رفع الصورة...", "");
+        const url = await uploadToStorage(file, "hero");
+        content.en.hero.bgImage = url;
+        content.ar.hero.bgImage = url;
+        const preview = document.getElementById("heroBgPreview");
+        if (preview) { preview.src = url; preview.style.display = "block"; }
+        toast("✅ تم رفع الصورة بنجاح", "ok");
+    } catch (err) {
+        console.error(err);
+        toast("❌ فشل رفع الصورة", "err");
+    }
 };
-window.removeHeroBg = function() {
+
+window.removeHeroBg = function () {
     content.en.hero.bgImage = '';
     content.ar.hero.bgImage = '';
     if (document.getElementById('heroBgPreview')) {
         document.getElementById('heroBgPreview').src = '';
         document.getElementById('heroBgPreview').style.display = 'none';
     }
-    document.getElementById('heroImgInput').value = ''; 
+    document.getElementById('heroImgInput').value = '';
 };
 
 function renderServices() {
@@ -363,33 +400,38 @@ function renderServices() {
         el.appendChild(d);
     });
 }
-// 💡 إضافة وحذف الخدمات من اللغتين معاً
-window.addService = () => { 
+
+window.addService = () => {
     const nextNum = `#0${content.en.services.length + 1}`;
-    content.en.services.push({ num: nextNum, title: 'New Service' }); 
-    content.ar.services.push({ num: nextNum, title: 'خدمة جديدة' }); 
-    renderServices(); 
+    content.en.services.push({ num: nextNum, title: 'New Service' });
+    content.ar.services.push({ num: nextNum, title: 'خدمة جديدة' });
+    renderServices();
 };
-window.deleteService = i => { 
-    if (content.en.services.length <= 1) return toast('يجب الإبقاء على خدمة', 'err'); 
-    content.en.services.splice(i, 1); 
-    content.ar.services.splice(i, 1); 
-    renderServices(); 
+window.deleteService = i => {
+    if (content.en.services.length <= 1) return toast('يجب الإبقاء على خدمة', 'err');
+    content.en.services.splice(i, 1);
+    content.ar.services.splice(i, 1);
+    renderServices();
 };
 
 function renderTools() {
-    if(document.getElementById('secTitleTools')) {
+    if (document.getElementById('secTitleTools')) {
         document.getElementById('secTitleTools').value = C().titles?.tools || '';
     }
     const el = document.getElementById('toolsRep'); el.innerHTML = '';
     C().tools.forEach((t, i) => {
         const d = document.createElement('div'); d.className = 'tool-item-row';
-        const opts = ['text', 'image', 'icontext'].map(v => `<option value="${v}" ${t.type === v ? 'selected' : ''}>${v === 'text' ? 'text (box)' : v === 'image' ? 'image' : 'icon+text'}</option>`).join('');
+        const opts = ['text', 'image', 'icontext'].map(v =>
+            `<option value="${v}" ${t.type === v ? 'selected' : ''}>${v === 'text' ? 'text (box)' : v === 'image' ? 'image' : 'icon+text'}</option>`
+        ).join('');
 
         let valueInput = '';
         if (t.type === 'image') {
-            valueInput = `<input type="file" accept="image/*" onchange="uploadToolImg(event, ${i})" style="max-width:200px; padding: 0.3rem;" />
-                          ${t.value && t.value.length > 100 ? '<span style="color:#16a34a; font-size:0.8rem; font-weight:bold;">تمت إضافة صورة ✓</span>' : ''}`;
+            const hasImg = t.value && (t.value.startsWith('http') || t.value.startsWith('data:'));
+            valueInput = `
+                <input type="file" accept="image/*" onchange="uploadToolImg(event, ${i})" style="max-width:200px; padding: 0.3rem;" />
+                ${hasImg ? `<img src="${t.value}" style="width:40px; height:40px; object-fit:contain; border-radius:4px; border:1px solid #ddd;" title="الصورة الحالية"/>` : ''}
+            `;
         } else if (t.type !== 'text') {
             valueInput = `<input type="text" dir="ltr" placeholder="slug e.g. figma" value="${t.value}" onchange="if(content.en.tools[${i}]) content.en.tools[${i}].value=this.value; if(content.ar.tools[${i}]) content.ar.tools[${i}].value=this.value;"/>`;
         }
@@ -402,31 +444,33 @@ function renderTools() {
         el.appendChild(d);
     });
 }
-// 💡 رفع صورة الأداة للغتين معاً
+
+// ✅ رفع صورة الأداة — base64
 window.uploadToolImg = function (e, i) {
     const file = e.target.files[0]; if (!file) return;
     const reader = new FileReader();
-    reader.onload = (event) => { 
-        const imgData = event.target.result;
-        if (content.en.tools[i]) content.en.tools[i].value = imgData; 
-        if (content.ar.tools[i]) content.ar.tools[i].value = imgData; 
-        renderTools(); 
+    reader.onload = (ev) => {
+        if (content.en.tools[i]) content.en.tools[i].value = ev.target.result;
+        if (content.ar.tools[i]) content.ar.tools[i].value = ev.target.result;
+        renderTools();
+        toast("✅ تم تحميل صورة الأداة", "ok");
     };
     reader.readAsDataURL(file);
 };
-window.addTool = () => { 
-    content.en.tools.push({ type: 'text', label: 'New Tool', value: '' }); 
-    content.ar.tools.push({ type: 'text', label: 'أداة جديدة', value: '' }); 
-    renderTools(); 
+
+window.addTool = () => {
+    content.en.tools.push({ type: 'text', label: 'New Tool', value: '' });
+    content.ar.tools.push({ type: 'text', label: 'أداة جديدة', value: '' });
+    renderTools();
 };
-window.deleteTool = i => { 
-    content.en.tools.splice(i, 1); 
-    content.ar.tools.splice(i, 1); 
-    renderTools(); 
+window.deleteTool = i => {
+    content.en.tools.splice(i, 1);
+    content.ar.tools.splice(i, 1);
+    renderTools();
 };
 
 function renderAbout() {
-    if(document.getElementById('secTitleAbout')) {
+    if (document.getElementById('secTitleAbout')) {
         document.getElementById('secTitleAbout').value = C().titles?.about || '';
     }
     const el = document.getElementById('aboutRep'); el.innerHTML = '';
@@ -443,26 +487,24 @@ function renderAbout() {
 }
 
 function renderStories() {
-    if(document.getElementById('secTitleStories')) {
+    if (document.getElementById('secTitleStories')) {
         document.getElementById('secTitleStories').value = C().titles?.success || '';
     }
     const el = document.getElementById('storiesRep'); el.innerHTML = '';
     C().stories.forEach((s, i) => {
         const d = document.createElement('div'); d.className = 'rep-item';
-        
         const imgUI = `
             <div class="f" style="background: rgba(64,82,255,0.05); padding: 10px; border-radius: 8px;">
                 <label style="color:var(--blue); font-weight:bold;">${editLang === 'ar' ? 'صورة القصة (تتطبق على اللغتين)' : 'Story Image (Synced to both languages)'}</label>
                 <input type="file" accept="image/*" onchange="uploadStoryImg(event, ${i})" style="max-width:250px; padding: 0.3rem;" />
-                ${s.imageUrl && s.imageUrl.length > 50 ? 
+                ${s.imageUrl && s.imageUrl.length > 10 ?
                     `<div style="margin-top:8px;">
                         <img src="${s.imageUrl}" style="max-width:150px; border-radius:10px; display:block; margin-bottom:5px;">
                         <button class="del-btn" onclick="removeStoryImg(${i})">إزالة الصورة والعودة للمربع</button>
-                    </div>` 
+                    </div>`
                 : '<span style="font-size:0.8rem; color:#888;">لم يتم رفع صورة (سيظهر المربع الأزرق)</span>'}
             </div>
         `;
-
         d.innerHTML = `
             <div class="rep-head"><span class="rep-num">${editLang === 'ar' ? 'قصة' : 'Story'} ${i + 1}</span>
             <button class="del-btn" onclick="deleteStory(${i})">🗑</button></div>
@@ -475,34 +517,37 @@ function renderStories() {
     });
 }
 
-// 💡 رفع وحذف صورة القصة للغتين معاً
-window.uploadStoryImg = function (e, i) {
+// ✅ رفع صورة القصة — Firebase Storage بدل base64
+window.uploadStoryImg = async function (e, i) {
     const file = e.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => { 
-        const imgData = event.target.result;
-        if (content.en.stories[i]) content.en.stories[i].imageUrl = imgData; 
-        if (content.ar.stories[i]) content.ar.stories[i].imageUrl = imgData; 
-        renderStories(); 
-    };
-    reader.readAsDataURL(file);
+    try {
+        toast("⏳ جاري رفع صورة القصة...", "");
+        const url = await uploadToStorage(file, "stories");
+        if (content.en.stories[i]) content.en.stories[i].imageUrl = url;
+        if (content.ar.stories[i]) content.ar.stories[i].imageUrl = url;
+        renderStories();
+        toast("✅ تم رفع صورة القصة", "ok");
+    } catch (err) {
+        toast("❌ فشل رفع الصورة: " + err.message, "err");
+    }
 };
-window.removeStoryImg = function(i) {
-    if (content.en.stories[i]) content.en.stories[i].imageUrl = ''; 
-    if (content.ar.stories[i]) content.ar.stories[i].imageUrl = ''; 
+
+window.removeStoryImg = function (i) {
+    if (content.en.stories[i]) content.en.stories[i].imageUrl = '';
+    if (content.ar.stories[i]) content.ar.stories[i].imageUrl = '';
     renderStories();
 };
 
-window.addStory = () => { 
-    content.en.stories.push({ title: 'New Story', text: '...', imageUrl: '' }); 
-    content.ar.stories.push({ title: 'قصة جديدة', text: '...', imageUrl: '' }); 
-    renderStories(); 
+window.addStory = () => {
+    content.en.stories.push({ title: 'New Story', text: '...', imageUrl: '' });
+    content.ar.stories.push({ title: 'قصة جديدة', text: '...', imageUrl: '' });
+    renderStories();
 };
-window.deleteStory = i => { 
-    if (content.en.stories.length <= 1) return toast('يجب الإبقاء على قصة', 'err'); 
-    content.en.stories.splice(i, 1); 
-    content.ar.stories.splice(i, 1); 
-    renderStories(); 
+window.deleteStory = i => {
+    if (content.en.stories.length <= 1) return toast('يجب الإبقاء على قصة', 'err');
+    content.en.stories.splice(i, 1);
+    content.ar.stories.splice(i, 1);
+    renderStories();
 };
 
 function renderFooter() {
@@ -531,11 +576,28 @@ window.changePass = () => {
 // ==========================================
 // 9. إدارة المدونة (Blog Management)
 // ==========================================
-let blogPosts = JSON.parse(localStorage.getItem('layan_blog_posts') || '[]');
+let blogPosts = []; // ✅ تُحمَّل من Firestore وليس localStorage
 let currentBlogCover = '';
 
+// ✅ جلب المقالات من Firestore عند تحميل لوحة التحكم
+async function loadBlogPosts() {
+    if (!db) return;
+    try {
+        const { collection, getDocs } = await import(
+            "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+        );
+        const snapshot = await getDocs(collection(db, 'blog_posts'));
+        blogPosts = [];
+        snapshot.forEach(doc => blogPosts.push({ firestoreId: doc.id, ...doc.data() }));
+        blogPosts.sort((a, b) => b.id - a.id);
+        renderAdminPosts();
+    } catch (e) {
+        toast('⚠️ تعذّر تحميل المقالات: ' + e.message, 'err');
+    }
+}
+
 window.renderAdminPosts = () => {
-    if(document.getElementById('secTitleBlog')) {
+    if (document.getElementById('secTitleBlog')) {
         document.getElementById('secTitleBlog').value = C().titles?.blog || '';
     }
     const el = document.getElementById('adminPostsRep');
@@ -559,85 +621,209 @@ window.renderAdminPosts = () => {
 window.openBlogEditor = (index) => {
     document.getElementById('blogEditorCard').style.display = 'block';
     document.getElementById('editBlogIndex').value = index;
-    currentBlogCover = ''; document.getElementById('postCover').value = ''; document.getElementById('coverPreview').style.display = 'none';
+    currentBlogCover = '';
+    document.getElementById('postCover').value = '';
+    document.getElementById('coverPreview').style.display = 'none';
+
+    // ✅ مسح صور الـ inline السابقة عند فتح مقال جديد
+    const oldPreview = document.getElementById('inlineImgsPreview');
+    if (oldPreview) oldPreview.remove();
 
     if (index >= 0) {
         const p = blogPosts[index];
         document.getElementById('blogEditorTitle').textContent = 'تعديل المقال';
-        document.getElementById('postTitle').value = p.title; document.getElementById('postTag').value = p.tag || '';
-        document.getElementById('postReadTime').value = p.readTime || ''; document.getElementById('postExcerpt').value = p.excerpt || '';
-        document.getElementById('postContent').value = p.content || ''; document.getElementById('postColor').value = p.color || '#4052FF';
+        document.getElementById('postTitle').value = p.title;
+        document.getElementById('postTag').value = p.tag || '';
+        document.getElementById('postReadTime').value = p.readTime || '';
+        document.getElementById('postExcerpt').value = p.excerpt || '';
+        document.getElementById('postColor').value = p.color || '#4052FF';
+
+        // ✅ استخدام innerHTML لعرض الصور داخل المحرر
+        const editor = document.getElementById('postContent');
+        if (editor) editor.innerHTML = p.content || '';
+
         if (p.coverImage) {
-            currentBlogCover = p.coverImage; document.getElementById('coverPreview').src = currentBlogCover; document.getElementById('coverPreview').style.display = 'block';
+            currentBlogCover = p.coverImage;
+            document.getElementById('coverPreview').src = currentBlogCover;
+            document.getElementById('coverPreview').style.display = 'block';
         }
     } else {
         document.getElementById('blogEditorTitle').textContent = 'إضافة مقال جديد';
-        ['postTitle', 'postTag', 'postReadTime', 'postExcerpt', 'postContent'].forEach(id => document.getElementById(id).value = '');
+        ['postTitle', 'postTag', 'postReadTime', 'postExcerpt'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('postColor').value = '#4052FF';
+
+        // ✅ مسح المحرر
+        const editor = document.getElementById('postContent');
+        if (editor) editor.innerHTML = '';
     }
     document.getElementById('blogEditorCard').scrollIntoView({ behavior: 'smooth' });
 };
 
 window.closeBlogEditor = () => document.getElementById('blogEditorCard').style.display = 'none';
 
-window.saveBlogPost = () => {
+window.saveBlogPost = async () => {
     const title = document.getElementById('postTitle').value.trim();
     const excerpt = document.getElementById('postExcerpt').value.trim();
     if (!title || !excerpt) return toast('يرجى إدخال العنوان والمقتطف على الأقل', 'err');
 
+    if (!db) return toast('❌ لا يوجد اتصال بـ Firebase', 'err');
+
     const index = parseInt(document.getElementById('editBlogIndex').value);
+
+    // ✅ جمع المحتوى كـ HTML (يحتوي على الصور كروابط Firebase)
+    const editor = document.getElementById('postContent');
+    const postContent = editor ? editor.innerHTML.trim() : '';
+
     const postData = {
         id: index >= 0 ? blogPosts[index].id : Date.now(),
-        title, excerpt, content: document.getElementById('postContent').value.trim(),
-        tag: document.getElementById('postTag').value.trim(), readTime: parseInt(document.getElementById('postReadTime').value) || null,
-        color: document.getElementById('postColor').value, coverImage: currentBlogCover,
+        title, excerpt,
+        content: postContent,
+        tag: document.getElementById('postTag').value.trim(),
+        readTime: parseInt(document.getElementById('postReadTime').value) || null,
+        color: document.getElementById('postColor').value,
+        coverImage: currentBlogCover,
         date: index >= 0 ? blogPosts[index].date : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
     };
-    if (index >= 0) blogPosts[index] = postData; else blogPosts.unshift(postData);
-    localStorage.setItem('layan_blog_posts', JSON.stringify(blogPosts));
-    renderAdminPosts(); closeBlogEditor(); toast('✅ تم حفظ المقال بنجاح', 'ok');
+
+    try {
+        toast('⏳ جاري حفظ المقال...', '');
+        const { collection, addDoc, doc, updateDoc } = await import(
+            "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+        );
+
+        if (index >= 0 && blogPosts[index].firestoreId) {
+            // ✅ تعديل مقال موجود
+            const docRef = doc(db, 'blog_posts', blogPosts[index].firestoreId);
+            await updateDoc(docRef, postData);
+        } else {
+            // ✅ إضافة مقال جديد
+            await addDoc(collection(db, 'blog_posts'), postData);
+        }
+
+        await loadBlogPosts(); // ✅ أعد تحميل القائمة من Firestore
+        closeBlogEditor();
+        toast('✅ تم حفظ المقال — يظهر الآن في المدونة!', 'ok');
+    } catch (e) {
+        toast('❌ فشل الحفظ: ' + e.message, 'err');
+    }
 };
 
-window.deleteBlogPost = (i) => {
-    if (confirm('هل أنت متأكد من حذف هذا المقال؟')) {
-        blogPosts.splice(i, 1); localStorage.setItem('layan_blog_posts', JSON.stringify(blogPosts));
-        renderAdminPosts(); toast('🗑 تم الحذف', 'ok');
+window.deleteBlogPost = async (i) => {
+    if (!confirm('هل أنت متأكد من حذف هذا المقال؟')) return;
+    if (!db) return toast('❌ لا يوجد اتصال بـ Firebase', 'err');
+
+    try {
+        const { doc, deleteDoc } = await import(
+            "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+        );
+        if (blogPosts[i].firestoreId) {
+            await deleteDoc(doc(db, 'blog_posts', blogPosts[i].firestoreId));
+        }
+        await loadBlogPosts(); // ✅ أعد تحميل القائمة
+        toast('🗑 تم الحذف', 'ok');
+    } catch (e) {
+        toast('❌ فشل الحذف: ' + e.message, 'err');
     }
 };
 
 window.insertBlogFormat = (type) => {
-    const textarea = document.getElementById('postContent');
-    const start = textarea.selectionStart, end = textarea.selectionEnd;
-    const sel = textarea.value.substring(start, end);
-    let insert = '';
+    const editor = document.getElementById('postContent');
+    if (!editor) return;
+    editor.focus();
+
+    let html = '';
     switch (type) {
-        case 'h2': insert = `\n## ${sel || 'عنوان جانبي'}\n`; break;
-        case 'h3': insert = `\n### ${sel || 'عنوان فرعي'}\n`; break;
-        case 'bold': insert = `**${sel || 'نص عريض'}**`; break;
-        case 'bullet': insert = `\n- ${sel || 'عنصر قائمة'}\n`; break;
-        case 'divider': insert = `\n\n---\n\n`; break;
+        case 'h2': html = `<h2>عنوان جانبي</h2>`; break;
+        case 'h3': html = `<h3>عنوان فرعي</h3>`; break;
+        case 'bold': html = `<strong>نص عريض</strong>`; break;
+        case 'bullet': html = `<ul><li>عنصر قائمة</li></ul>`; break;
+        case 'divider': html = `<hr/>`; break;
     }
-    textarea.value = textarea.value.substring(0, start) + insert + textarea.value.substring(end);
-    textarea.focus(); textarea.selectionStart = textarea.selectionEnd = start + insert.length;
+
+    const sel = window.getSelection();
+    if (sel.rangeCount) {
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        const el = document.createElement('div');
+        el.innerHTML = html;
+        const frag = document.createDocumentFragment();
+        let lastNode;
+        while (el.firstChild) { lastNode = frag.appendChild(el.firstChild); }
+        range.insertNode(frag);
+        if (lastNode) {
+            const newRange = range.cloneRange();
+            newRange.setStartAfter(lastNode);
+            newRange.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+        }
+    } else {
+        editor.innerHTML += html;
+    }
 };
 
-document.getElementById('postCover')?.addEventListener('change', e => {
-    const f = e.target.files[0]; if (!f) return; const r = new FileReader();
-    r.onload = ev => {
-        currentBlogCover = ev.target.result;
-        const prev = document.getElementById('coverPreview');
-        if (prev) { prev.src = currentBlogCover; prev.style.display = 'block'; }
-    }; r.readAsDataURL(f);
-});
+// ==========================================
+// ✅ ربط أحداث الصور (Image Event Bindings)
+// ==========================================
+function bindImageEvents() {
 
-document.getElementById('inlineImgUpload')?.addEventListener('change', e => {
-    const f = e.target.files[0]; if (!f) return; const r = new FileReader();
-    r.onload = ev => {
-        const textarea = document.getElementById('postContent');
-        const insert = `\n\n![صورة توضيحية](${ev.target.result})\n\n`;
-        textarea.value = textarea.value.substring(0, textarea.selectionStart) + insert + textarea.value.substring(textarea.selectionEnd);
-    }; r.readAsDataURL(f);
-});
+    // ✅ صورة الغلاف — base64
+    document.getElementById('postCover')?.addEventListener('change', (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            currentBlogCover = ev.target.result;
+            const prev = document.getElementById('coverPreview');
+            if (prev) { prev.src = currentBlogCover; prev.style.display = 'block'; }
+            toast("✅ تم تحميل صورة الغلاف", "ok");
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // ✅ صورة داخل المقال — تظهر عند مؤشر الكتابة مباشرة
+    document.getElementById('inlineImgUpload')?.addEventListener('change', (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const url = ev.target.result;
+
+            // ✅ أدرج الصورة عند موضع المؤشر في المحرر
+            const editor = document.getElementById('postContent');
+            editor.focus();
+
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = "صورة توضيحية";
+            img.style.cssText = `
+                max-width: 100%; border-radius: 8px;
+                display: block; margin: 12px auto;
+                cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            `;
+            img.title = "انقري مرتين للحذف";
+            img.ondblclick = () => {
+                if (confirm('هل تريدين حذف هذه الصورة؟')) img.remove();
+            };
+
+            // أدرجها عند موضع المؤشر
+            const sel = window.getSelection();
+            if (sel.rangeCount && editor.contains(sel.anchorNode)) {
+                const range = sel.getRangeAt(0);
+                range.insertNode(img);
+                range.setStartAfter(img);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            } else {
+                // إذا لم يكن المؤشر داخل المحرر، أضفها في النهاية
+                editor.appendChild(img);
+            }
+
+            toast("✅ الصورة أُدرجت عند المؤشر", "ok");
+            e.target.value = '';
+        };
+        reader.readAsDataURL(file);
+    });
+}
 
 // ==========================================
 // 10. تشغيل الأكواد الأساسية (Event Listeners)
