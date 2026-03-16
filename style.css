@@ -784,7 +784,7 @@ nav a:hover {
 
     /* تصغير اللوجو في الجوال */
     .header-logo {
-        height: 40px !important;
+        height: 45px !important;
     }
 
     /* 💡 قسم الهيرو المعدل (المنحنى والظل) 💡 */
@@ -804,7 +804,7 @@ nav a:hover {
         z-index: 10 !important;
         /* يخليه فوق القسم الأبيض */
 
-        box-shadow: inset 0px -15px 40px 5px rgba(43, 43, 43, 0.8) !important;
+        box-shadow: inset 0px -15px 40px 5px rgba(0, 0, 0, 0.8) !important;
         /* يسحب القسم اللي تحته (الأبيض) ليكون وراه */
         margin-bottom: -80px !important;
 
@@ -831,15 +831,17 @@ nav a:hover {
     .hero h1 {
         font-size: 50px !important;
         text-align: left !important;
-        margin-bottom: 2px !important;
-        max-width: 100% !important;
+        margin-bottom: -5px !important; /* قيمة سالبة لتقريب العنوان جداً من النص المتحرك */
+        line-height: 1 !important;
     }
 
-    .hero h2 {
-        font-size: 30px !important;
-        text-align: left !important;
-        margin-bottom: 40px !important;
-        max-width: 95% !important;
+    /* تعديل النص المتحرك في الجوال */
+    .hero h2.typewriter-h2 {
+        font-size: 30.5px !important;
+        margin-top: 0px !important;    /* إلغاء أي فراغ علوي */
+        padding-top: 0px !important;   /* إلغاء أي حشو علوي */
+        line-height: 1.2 !important;
+        margin-bottom: 2px !important;
     }
 
     /* تكبير خط الآلة الكاتبة و التنسيق الجديد */
@@ -875,8 +877,8 @@ nav a:hover {
         flex-wrap: nowrap !important;
         justify-content: flex-start !important;
         gap: 15px !important;
-        margin-bottom: 30px !important;
-        padding-top: 10px !important;
+        margin-bottom: 15px !important;
+        margin-top: -5px !important;
     }
 
     .btn-outline {
@@ -895,9 +897,9 @@ nav a:hover {
         display: flex !important;
         flex-wrap: wrap !important;
         justify-content: center !important;
-        gap: 20px 5px !important;
-        margin-top: 10px !important;
-        margin-bottom: 10px !important;
+        gap: 10px 5px !important;
+        margin-top: 15px !important;
+        margin-bottom: -5px !important;
         width: 100% !important;
     }
 
@@ -1014,7 +1016,7 @@ nav a:hover {
     /* الأقسام السفلية */
     .about-card {
         flex-direction: column !important;
-        padding: 20px 20px !important;
+        padding: 30px 20px !important;
     }
 
     .about-left,
@@ -1033,18 +1035,18 @@ nav a:hover {
     }
 
     .success-stories {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
+        padding-left: 2 !important;
+        padding-right: 2 !important;
     }
 
     .prev-btn {
         left: 0px !important;
-        padding: 2px !important;
+        padding: 5px !important;
     }
 
     /* 4. تثبيت السهم اليمين على الحافة */
     .next-btn {
         right: 0px !important;
-        padding: 2px !important;
+        padding: 5px !important;
     }
 }
