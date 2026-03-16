@@ -1039,12 +1039,12 @@ nav a:hover {
 
     .prev-btn {
         left: 0px !important;
-        padding: 5px !important;
+        padding: 2px !important;
     }
 
     /* 4. تثبيت السهم اليمين على الحافة */
     .next-btn {
         right: 0px !important;
-        padding: 5px !important;
+        padding: 2px !important;
     }
 }
