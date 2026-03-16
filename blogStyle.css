@@ -1,3 +1,20 @@
+@font-face {
+    font-family: 'Ara Hamah';
+    src: url('fonts/Ara Hamah 1964 R Regular.otf') format('opentype');
+    font-weight: normal;
+    /* الوزن العادي */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Ara Hamah';
+    /* كتبنا اسم الملف مطابق 100% للموجود في المجلد عندك */
+    src: url('fonts/AraHamah1964B-Bold.ttf') format('truetype');
+    font-weight: bold;
+    /* الوزن البولد */
+    font-style: normal;
+}
+
 /* ==========================================
    1. المتغيرات والإعدادات العامة
    ========================================== */
@@ -21,8 +38,12 @@
 body {
     background: var(--surface);
     color: var(--text-dark);
-    font-family: 'IBM Plex Sans Arabic', sans-serif;
+    font-family: 'Ara Hamah', sans-serif;
     min-height: 100vh;
+}
+
+html {
+    font-size: 22px !important;
 }
 
 a { text-decoration: none; color: inherit; }
