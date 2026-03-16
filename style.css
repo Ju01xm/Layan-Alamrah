@@ -991,8 +991,8 @@ nav a:hover {
     }
 
     .success-stories {
-        padding-left: 2 !important;
-        padding-right: 2 !important;
+        padding-left: 0px !important;
+        padding-right: 0px !important;
     }
 
     .prev-btn {
