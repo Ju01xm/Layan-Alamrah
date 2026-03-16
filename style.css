@@ -767,7 +767,7 @@ nav a:hover {
         z-index: 10 !important;
         /* يخليه فوق القسم الأبيض */
 
-        box-shadow: inset 0px -15px 40px 5px rgba(43, 43, 43, 0.8) !important;
+        box-shadow: inset 0px -15px 40px 5px rgba(0, 0, 0, 0.8) !important;
         /* يسحب القسم اللي تحته (الأبيض) ليكون وراه */
         margin-bottom: -80px !important;
 
