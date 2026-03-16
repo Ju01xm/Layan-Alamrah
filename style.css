@@ -1014,7 +1014,7 @@ nav a:hover {
     /* الأقسام السفلية */
     .about-card {
         flex-direction: column !important;
-        padding: 30px 20px !important;
+        padding: 20px 20px !important;
     }
 
     .about-left,
@@ -1033,8 +1033,8 @@ nav a:hover {
     }
 
     .success-stories {
-        padding-left: 2 !important;
-        padding-right: 2 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
     }
 
     .prev-btn {
