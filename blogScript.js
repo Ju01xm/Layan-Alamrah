@@ -61,7 +61,7 @@ function renderPosts() {
         const formattedDate = new Date(post.id).toLocaleDateString(currentLang === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
         // ✅ عرض العنوان والمقتطف حسب اللغة
-        const title = post.title || '';
+        const title = currentLang === 'ar' && post.titleAr ? post.titleAr : (post.title || '');
         const excerpt = currentLang === 'ar' && post.excerptAr ? post.excerptAr : (post.excerpt || '');
         
         card.innerHTML = `
@@ -92,6 +92,7 @@ function openPost(index) {
     // ✅ عرض المحتوى حسب اللغة
     const htmlContent = currentLang === 'ar' && post.contentAr ? post.contentAr : (post.content || '');
     const excerpt = currentLang === 'ar' && post.excerptAr ? post.excerptAr : (post.excerpt || '');
+    const title = currentLang === 'ar' && post.titleAr ? post.titleAr : (post.title || '');
     
     const dict = blogDict[currentLang];
     const formattedDate = new Date(post.id).toLocaleDateString(currentLang === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -103,7 +104,7 @@ function openPost(index) {
                 <span class="article-date">${formattedDate}</span>
                 ${post.readTime ? `<span class="article-read-time">⏱ ${post.readTime} ${dict.readTimeMsg}</span>` : ''}
             </div>
-            <h1 class="article-title" style="color:${post.color}">${post.title}</h1>
+            <h1 class="article-title" style="color:${post.color}">${title}</h1>
             <p class="article-excerpt">${excerpt}</p>
         </div>
         <div class="article-divider"></div>

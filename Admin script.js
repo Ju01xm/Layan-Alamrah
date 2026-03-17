@@ -674,6 +674,7 @@ window.openBlogEditor = (index) => {
         const p = blogPosts[index];
         document.getElementById('blogEditorTitle').textContent = 'تعديل المقال';
         document.getElementById('postTitle').value = p.title || '';
+        document.getElementById('postTitleAr').value = p.titleAr || '';
         document.getElementById('postTag').value = p.tag || '';
         document.getElementById('postReadTime').value = p.readTime || '';
         document.getElementById('postExcerpt').value = p.excerpt || '';
@@ -693,7 +694,7 @@ window.openBlogEditor = (index) => {
         }
     } else {
         document.getElementById('blogEditorTitle').textContent = 'إضافة مقال جديد';
-        ['postTitle', 'postTag', 'postReadTime', 'postExcerpt', 'postExcerptAr'].forEach(id => document.getElementById(id).value = '');
+        ['postTitle', 'postTitleAr', 'postTag', 'postReadTime', 'postExcerpt', 'postExcerptAr'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('postColor').value = '#4052FF';
 
         const editor = document.getElementById('postContent');
@@ -721,6 +722,7 @@ window.saveBlogPost = async () => {
     const postData = {
         id: index >= 0 ? blogPosts[index].id : Date.now(),
         title,
+        titleAr: document.getElementById('postTitleAr').value.trim(),
         excerpt,
         excerptAr: document.getElementById('postExcerptAr').value.trim(),
         content: editorEn ? editorEn.innerHTML.trim() : '',
