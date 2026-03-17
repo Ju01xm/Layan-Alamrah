@@ -237,6 +237,12 @@ function switchPanel(id) {
     const m = META[id] || {};
     document.getElementById('pTitle').textContent = m.title || id;
     document.getElementById('pSub').textContent = m.sub || '';
+
+    // ✅ إخفاء تبويبات اللغة في صفحة المدونة — المحرر فيه حقلين منفصلين
+    const langTabs = document.querySelector('.lang-tabs');
+    if (langTabs) {
+        langTabs.style.display = (id === 'blog' || id === 'security') ? 'none' : '';
+    }
 }
 
 function setEditLang(lang) {
@@ -661,22 +667,24 @@ window.openBlogEditor = (index) => {
     document.getElementById('postCover').value = '';
     document.getElementById('coverPreview').style.display = 'none';
 
-    // ✅ مسح صور الـ inline السابقة عند فتح مقال جديد
     const oldPreview = document.getElementById('inlineImgsPreview');
     if (oldPreview) oldPreview.remove();
 
     if (index >= 0) {
         const p = blogPosts[index];
         document.getElementById('blogEditorTitle').textContent = 'تعديل المقال';
-        document.getElementById('postTitle').value = p.title;
+        document.getElementById('postTitle').value = p.title || '';
         document.getElementById('postTag').value = p.tag || '';
         document.getElementById('postReadTime').value = p.readTime || '';
         document.getElementById('postExcerpt').value = p.excerpt || '';
+        document.getElementById('postExcerptAr').value = p.excerptAr || '';
         document.getElementById('postColor').value = p.color || '#4052FF';
 
-        // ✅ استخدام innerHTML لعرض الصور داخل المحرر
         const editor = document.getElementById('postContent');
         if (editor) editor.innerHTML = p.content || '';
+
+        const editorAr = document.getElementById('postContentAr');
+        if (editorAr) editorAr.innerHTML = p.contentAr || '';
 
         if (p.coverImage) {
             currentBlogCover = p.coverImage;
@@ -685,12 +693,13 @@ window.openBlogEditor = (index) => {
         }
     } else {
         document.getElementById('blogEditorTitle').textContent = 'إضافة مقال جديد';
-        ['postTitle', 'postTag', 'postReadTime', 'postExcerpt'].forEach(id => document.getElementById(id).value = '');
+        ['postTitle', 'postTag', 'postReadTime', 'postExcerpt', 'postExcerptAr'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('postColor').value = '#4052FF';
 
-        // ✅ مسح المحرر
         const editor = document.getElementById('postContent');
         if (editor) editor.innerHTML = '';
+        const editorAr = document.getElementById('postContentAr');
+        if (editorAr) editorAr.innerHTML = '';
     }
     document.getElementById('blogEditorCard').scrollIntoView({ behavior: 'smooth' });
 };
@@ -700,20 +709,22 @@ window.closeBlogEditor = () => document.getElementById('blogEditorCard').style.d
 window.saveBlogPost = async () => {
     const title = document.getElementById('postTitle').value.trim();
     const excerpt = document.getElementById('postExcerpt').value.trim();
-    if (!title || !excerpt) return toast('يرجى إدخال العنوان والمقتطف على الأقل', 'err');
+    if (!title || !excerpt) return toast('يرجى إدخال العنوان والمقتطف الإنجليزي على الأقل', 'err');
 
     if (!db) return toast('❌ لا يوجد اتصال بـ Firebase', 'err');
 
     const index = parseInt(document.getElementById('editBlogIndex').value);
 
-    // ✅ جمع المحتوى كـ HTML (يحتوي على الصور كروابط Firebase)
-    const editor = document.getElementById('postContent');
-    const postContent = editor ? editor.innerHTML.trim() : '';
+    const editorEn = document.getElementById('postContent');
+    const editorAr = document.getElementById('postContentAr');
 
     const postData = {
         id: index >= 0 ? blogPosts[index].id : Date.now(),
-        title, excerpt,
-        content: postContent,
+        title,
+        excerpt,
+        excerptAr: document.getElementById('postExcerptAr').value.trim(),
+        content: editorEn ? editorEn.innerHTML.trim() : '',
+        contentAr: editorAr ? editorAr.innerHTML.trim() : '',
         tag: document.getElementById('postTag').value.trim(),
         readTime: parseInt(document.getElementById('postReadTime').value) || null,
         color: document.getElementById('postColor').value,
@@ -728,15 +739,13 @@ window.saveBlogPost = async () => {
         );
 
         if (index >= 0 && blogPosts[index].firestoreId) {
-            // ✅ تعديل مقال موجود
             const docRef = doc(db, 'blog_posts', blogPosts[index].firestoreId);
             await updateDoc(docRef, postData);
         } else {
-            // ✅ إضافة مقال جديد
             await addDoc(collection(db, 'blog_posts'), postData);
         }
 
-        await loadBlogPosts(); // ✅ أعد تحميل القائمة من Firestore
+        await loadBlogPosts();
         closeBlogEditor();
         toast('✅ تم حفظ المقال — يظهر الآن في المدونة!', 'ok');
     } catch (e) {
@@ -762,17 +771,17 @@ window.deleteBlogPost = async (i) => {
     }
 };
 
-window.insertBlogFormat = (type) => {
-    const editor = document.getElementById('postContent');
+window.insertBlogFormat = (type, editorId = 'postContent') => {
+    const editor = document.getElementById(editorId);
     if (!editor) return;
     editor.focus();
 
     let html = '';
     switch (type) {
-        case 'h2': html = `<h2>عنوان جانبي</h2>`; break;
-        case 'h3': html = `<h3>عنوان فرعي</h3>`; break;
-        case 'bold': html = `<strong>نص عريض</strong>`; break;
-        case 'bullet': html = `<ul><li>عنصر قائمة</li></ul>`; break;
+        case 'h2': html = `<h2>${editorId === 'postContentAr' ? 'عنوان جانبي' : 'Side Heading'}</h2>`; break;
+        case 'h3': html = `<h3>${editorId === 'postContentAr' ? 'عنوان فرعي' : 'Sub Heading'}</h3>`; break;
+        case 'bold': html = `<strong>${editorId === 'postContentAr' ? 'نص عريض' : 'Bold Text'}</strong>`; break;
+        case 'bullet': html = `<ul><li>${editorId === 'postContentAr' ? 'عنصر قائمة' : 'List item'}</li></ul>`; break;
         case 'divider': html = `<hr/>`; break;
     }
 
@@ -816,31 +825,22 @@ function bindImageEvents() {
         reader.readAsDataURL(file);
     });
 
-    // ✅ صورة داخل المقال — تظهر عند مؤشر الكتابة مباشرة
-    document.getElementById('inlineImgUpload')?.addEventListener('change', (e) => {
-        const file = e.target.files[0]; if (!file) return;
+    // دالة مساعدة لإدراج صورة في محرر معين
+    function insertImgInEditor(editorId, file) {
         const reader = new FileReader();
         reader.onload = (ev) => {
             const url = ev.target.result;
-
-            // ✅ أدرج الصورة عند موضع المؤشر في المحرر
-            const editor = document.getElementById('postContent');
+            const editor = document.getElementById(editorId);
+            if (!editor) return;
             editor.focus();
 
             const img = document.createElement('img');
             img.src = url;
             img.alt = "صورة توضيحية";
-            img.style.cssText = `
-                max-width: 100%; border-radius: 8px;
-                display: block; margin: 12px auto;
-                cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            `;
+            img.style.cssText = `max-width:100%; border-radius:8px; display:block; margin:12px auto; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.15);`;
             img.title = "انقري مرتين للحذف";
-            img.ondblclick = () => {
-                if (confirm('هل تريدين حذف هذه الصورة؟')) img.remove();
-            };
+            img.ondblclick = () => { if (confirm('حذف هذه الصورة؟')) img.remove(); };
 
-            // أدرجها عند موضع المؤشر
             const sel = window.getSelection();
             if (sel.rangeCount && editor.contains(sel.anchorNode)) {
                 const range = sel.getRangeAt(0);
@@ -850,14 +850,25 @@ function bindImageEvents() {
                 sel.removeAllRanges();
                 sel.addRange(range);
             } else {
-                // إذا لم يكن المؤشر داخل المحرر، أضفها في النهاية
                 editor.appendChild(img);
             }
-
-            toast("✅ الصورة أُدرجت عند المؤشر", "ok");
-            e.target.value = '';
+            toast("✅ الصورة أُدرجت", "ok");
         };
         reader.readAsDataURL(file);
+    }
+
+    // ✅ صورة داخل المقال الإنجليزي
+    document.getElementById('inlineImgUpload')?.addEventListener('change', (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        insertImgInEditor('postContent', file);
+        e.target.value = '';
+    });
+
+    // ✅ صورة داخل المقال العربي
+    document.getElementById('inlineImgUploadAr')?.addEventListener('change', (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        insertImgInEditor('postContentAr', file);
+        e.target.value = '';
     });
 }
 

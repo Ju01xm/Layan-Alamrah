@@ -59,6 +59,10 @@ function renderPosts() {
         card.className = 'post-card';
         
         const formattedDate = new Date(post.id).toLocaleDateString(currentLang === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+        // ✅ عرض العنوان والمقتطف حسب اللغة
+        const title = post.title || '';
+        const excerpt = currentLang === 'ar' && post.excerptAr ? post.excerptAr : (post.excerpt || '');
         
         card.innerHTML = `
             <div class="card-color-bar" style="background:${post.color}"></div>
@@ -68,8 +72,8 @@ function renderPosts() {
                     <span class="card-date">${formattedDate}</span>
                     ${post.readTime ? `<span class="card-read-time">⏱ ${post.readTime} ${blogDict[currentLang].readTimeMsg}</span>` : ''}
                 </div>
-                <h2 class="card-title">${post.title}</h2>
-                <p class="card-excerpt">${post.excerpt}</p>
+                <h2 class="card-title" style="color:${post.color}">${title}</h2>
+                <p class="card-excerpt">${excerpt}</p>
             </div>
             <div class="card-footer">
                 <span class="read-more" style="color:${post.color}">${blogDict[currentLang].readMore}</span>
@@ -85,8 +89,9 @@ function openPost(index) {
     const post = posts[index];
     const article = document.getElementById('articleContent');
     
-    // ✅ المحتوى الآن HTML مباشر (من contenteditable) — لا حاجة لـ parseContent
-    const htmlContent = post.content || '';
+    // ✅ عرض المحتوى حسب اللغة
+    const htmlContent = currentLang === 'ar' && post.contentAr ? post.contentAr : (post.content || '');
+    const excerpt = currentLang === 'ar' && post.excerptAr ? post.excerptAr : (post.excerpt || '');
     
     const dict = blogDict[currentLang];
     const formattedDate = new Date(post.id).toLocaleDateString(currentLang === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -98,11 +103,11 @@ function openPost(index) {
                 <span class="article-date">${formattedDate}</span>
                 ${post.readTime ? `<span class="article-read-time">⏱ ${post.readTime} ${dict.readTimeMsg}</span>` : ''}
             </div>
-            <h1 class="article-title">${post.title}</h1>
-            <p class="article-excerpt">${post.excerpt}</p>
+            <h1 class="article-title" style="color:${post.color}">${post.title}</h1>
+            <p class="article-excerpt">${excerpt}</p>
         </div>
         <div class="article-divider"></div>
-        <div class="newsletter-content">${htmlContent}</div>
+        <div class="newsletter-content" dir="${currentLang === 'ar' ? 'rtl' : 'ltr'}">${htmlContent}</div>
         <div class="article-footer">
             <div class="author-info">
                 <div class="author-avatar">L</div>
