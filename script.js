@@ -207,16 +207,19 @@ async function loadBlogPreviews() {
 
         recentPosts.forEach((post) => {
             const coverSrc = post.coverImage || 'images/brain.png';
+            const title = currentLang === 'ar' && post.titleAr ? post.titleAr : (post.title || '');
+            const excerpt = currentLang === 'ar' && post.excerptAr ? post.excerptAr : (post.excerpt || '');
+            const cardColor = post.color || 'var(--accent-blue)';
 
             blogGrid.innerHTML += `
                 <div class="blog-card" onclick="window.location.href='blog.html'" style="cursor:pointer; min-width: 300px; flex-shrink: 0;">
                     <div class="blog-visual-area">
-                        <div class="soft-green-circle"></div>
+                        <div class="soft-green-circle" style="background:${cardColor}; opacity:0.15;"></div>
                         <img src="${coverSrc}" alt="Cover" class="brain-img" style="width: 140px; height: 140px; object-fit: contain; z-index: 2; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));" onerror="this.src='images/brain.png'">
                     </div>
                     <div class="blog-card-body">
-                        <h3 class="highlight-percent" style="font-size: 1.4rem;">${post.title}</h3>
-                        <p class="study-text">${post.excerpt || ''}</p>
+                        <h3 class="highlight-percent" style="font-size: 1.4rem; color:${cardColor};">${title}</h3>
+                        <p class="study-text">${excerpt}</p>
                     </div>
                 </div>`;
         });
