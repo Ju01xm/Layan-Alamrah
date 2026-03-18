@@ -325,7 +325,7 @@ a { text-decoration: none; color: inherit; }
     height: 1px; background: linear-gradient(to left, transparent, #ddd, transparent); margin: 2.5rem 0;
 }
 
-.newsletter-content { font-size: 1rem; line-height: 1.9; color: #333; }
+.newsletter-content { font-size: 1rem; line-height: 1.9; color: #333; font-family: 'Ara Hamah', sans-serif; }
 .newsletter-content h2 { font-size: 1.4rem; font-weight: 700; color: var(--text-dark); margin: 2.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #f0f0f0; }
 .newsletter-content h3 { font-size: 1.15rem; font-weight: 600; color: var(--text-dark); margin: 2rem 0 0.75rem; }
 .newsletter-content p { margin-bottom: 1.3rem; }
