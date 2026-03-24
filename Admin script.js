@@ -1,33 +1,20 @@
 /* ==========================================
    ADMIN SCRIPT — Layan Alamrah Portfolio
-   Fixed Image Upload using Firebase Storage
+   Professional Image Upload using Cloudinary 
    ========================================== */
 
 // ==========================================
-// 1. إعدادات قاعدة البيانات (Firebase)
+// 1. إعدادات قاعدة البيانات (Firebase Firestore) 
 // ==========================================
 let db = null;
-let storage = null;
-
 let firestoreDoc = null;
 let getDoc = null;
 let setDoc = null;
 
-let ref = null;
-let uploadBytes = null;
-let getDownloadURL = null;
-
 async function loadFirebase() {
     try {
-        const { initializeApp } = await import(
-            "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"
-        );
-        const fs = await import(
-            "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
-        );
-        const st = await import(
-            "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js"
-        );
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+        const fs = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
 
         const firebaseConfig = {
             apiKey: "AIzaSyBIxhqqk425SFWQXe6Y3KThpV83v5CJvLA",
@@ -39,21 +26,49 @@ async function loadFirebase() {
         };
 
         const app = initializeApp(firebaseConfig);
-
         db = fs.getFirestore(app);
         firestoreDoc = fs.doc;
         getDoc = fs.getDoc;
         setDoc = fs.setDoc;
 
-        storage = st.getStorage(app);
-        ref = st.ref;
-        uploadBytes = st.uploadBytes;
-        getDownloadURL = st.getDownloadURL;
-
         return true;
     } catch (e) {
         console.warn("Firebase load failed:", e.message);
         return false;
+    }
+}
+
+// ==========================================
+// 🌟 دالة الرفع السحابي الاحترافية (Cloudinary) 🌟
+// ==========================================
+const CLOUD_NAME = "dzzxebvvl"; 
+const UPLOAD_PRESET = "layan-alamrah";
+
+async function uploadImageProfessional(file) {
+    if (!CLOUD_NAME || !UPLOAD_PRESET) {
+        throw new Error("يرجى إعداد Cloudinary أولاً");
+    }
+
+    const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.secure_url) {
+            return data.secure_url; 
+        } else {
+            throw new Error(data.error.message || "خطأ في رفع الصورة للسيرفر");
+        }
+    } catch (error) {
+        throw new Error("فشل الرفع: " + error.message);
     }
 }
 
@@ -64,7 +79,7 @@ const DEFAULTS = {
     en: {
         theme: { accentColor: '#4052FF' },
         titles: { about: 'ABOUT ME', success: 'SUCCESS STORIES', blog: 'MY BLOGS', tools: 'CORE TOOLS' },
-        hero: { greeting: "HI! I'M LAYAN ALAMRAH", title1: "I'M A BRAND & CORPORATE", title2: "COMMUNICATION PROFESSIONAL", btnText: "Get in Touch →", bgImage: "" },
+        hero: { greeting: "HI! I'M LAYAN ALAMRAH", title1: "I'M A BRAND & CORPORATE", title2: "COMMUNICATION PROFESSIONAL", btnText: "Get in Touch →", bgImage: "", typewriter: "Branding, Corporate Communication, Marketing, Content Creation" },
         services: [
             { num: '#01', title: 'Brand\nManagement' }, { num: '#02', title: 'Content\nStrategy' },
             { num: '#03', title: 'Digital\nMarketing' }, { num: '#04', title: 'Event\nManagement' }, { num: '#05', title: 'Corporate\nCommunications' }
@@ -89,7 +104,7 @@ const DEFAULTS = {
     ar: {
         theme: { accentColor: '#4052FF' },
         titles: { about: 'نبذة عني', success: 'قصص النجاح', blog: 'المدونة', tools: 'الأدوات الأساسية' },
-        hero: { greeting: "مرحباً! أنا ليان العمرة", title1: "متخصصة في الاتصال", title2: "المؤسسي والعلامة التجارية", btnText: "تواصلي معي ←", bgImage: "" },
+        hero: { greeting: "مرحباً! أنا ليان العمرة", title1: "متخصصة في الاتصال", title2: "المؤسسي والعلامة التجارية", btnText: "تواصلي معي ←", bgImage: "", typewriter: "إدارة العلامات التجارية, التواصل المؤسسي, التسويق, صناعة المحتوى" },
         services: [
             { num: '#01', title: 'إدارة\nالعلامة التجارية' }, { num: '#02', title: 'استراتيجية\nالمحتوى' },
             { num: '#03', title: 'التسويق\nالرقمي' }, { num: '#04', title: 'إدارة\nالفعاليات' }, { num: '#05', title: 'الاتصالات\nالمؤسسية' }
@@ -207,10 +222,7 @@ async function initAdmin() {
     renderAll();
     switchPanel('hero');
 
-    // ✅ تحميل المقالات من Firestore
     await loadBlogPosts();
-
-    // ✅ ربط أحداث الصور بعد تحميل Firebase
     bindImageEvents();
 }
 
@@ -238,7 +250,6 @@ function switchPanel(id) {
     document.getElementById('pTitle').textContent = m.title || id;
     document.getElementById('pSub').textContent = m.sub || '';
 
-    // ✅ إخفاء تبويبات اللغة في صفحة المدونة — المحرر فيه حقلين منفصلين
     const langTabs = document.querySelector('.lang-tabs');
     if (langTabs) {
         langTabs.style.display = (id === 'blog' || id === 'security') ? 'none' : '';
@@ -275,6 +286,9 @@ function collectPanel() {
             c.hero.title1 = document.getElementById('heroTitle1').value;
             c.hero.title2 = document.getElementById('heroTitle2').value;
             c.hero.btnText = document.getElementById('heroBtnText').value;
+            if(document.getElementById('heroTypewriter')) {
+                c.hero.typewriter = document.getElementById('heroTypewriter').value;
+            }
             if (document.getElementById('themeColor')) {
                 const colorVal = document.getElementById('themeColor').value;
                 if (!content.en.theme) content.en.theme = {};
@@ -334,6 +348,11 @@ function renderHero() {
     document.getElementById('heroTitle1').value = C().hero.title1 || '';
     document.getElementById('heroTitle2').value = C().hero.title2 || '';
     document.getElementById('heroBtnText').value = C().hero.btnText || '';
+    
+    if(document.getElementById('heroTypewriter')) {
+        document.getElementById('heroTypewriter').value = C().hero.typewriter || '';
+    }
+
     if (document.getElementById('themeColor')) {
         document.getElementById('themeColor').value = C().theme?.accentColor || '#4052FF';
     }
@@ -348,72 +367,32 @@ function renderHero() {
     }
 }
 
-// ==========================================
-// دالة مساعدة: رفع أي صورة لـ Firebase Storage
-// ==========================================
-async function uploadToStorage(file, folder) {
-    if (!storage) throw new Error("Firebase Storage غير متصل");
-    const filePath = `${folder}/${Date.now()}_${file.name}`;
-    const storageRef = ref(storage, filePath);
-    await uploadBytes(storageRef, file);
-    return await getDownloadURL(storageRef);
-}
-
-// ==========================================
-// رفع صورة الهيرو — base64 مضغوطة
-// ==========================================
-window.uploadHeroBg = function (e) {
+// 🖼️ رفع صورة الهيرو — Cloudinary
+window.uploadHeroBg = async function (e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    toast("⏳ جاري معالجة الصورة...", "");
-
-    const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
-
-    img.onload = async () => {
-        URL.revokeObjectURL(objectUrl);
-
-        // ✅ ضغط الصورة لتكون أقل من 800KB
-        const canvas = document.createElement('canvas');
-        const MAX_W = 1400;
-        let w = img.width, h = img.height;
-        if (w > MAX_W) { h = Math.round(h * MAX_W / w); w = MAX_W; }
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-
-        // جرب جودة 0.8 أولاً، لو زادت عن 800KB اخفض تدريجياً
-        let quality = 0.8;
-        let dataUrl = canvas.toDataURL('image/jpeg', quality);
-        while (dataUrl.length > 800000 && quality > 0.3) {
-            quality -= 0.1;
-            dataUrl = canvas.toDataURL('image/jpeg', quality);
-        }
-
-        content.en.hero.bgImage = dataUrl;
-        content.ar.hero.bgImage = dataUrl;
+    try {
+        toast("⏳ جاري رفع صورة الهيرو للسيرفر السحابي...", "");
+        const url = await uploadImageProfessional(file);
+        
+        content.en.hero.bgImage = url;
+        content.ar.hero.bgImage = url;
 
         const preview = document.getElementById("heroBgPreview");
-        if (preview) { preview.src = dataUrl; preview.style.display = "block"; }
+        if (preview) { preview.src = url; preview.style.display = "block"; }
 
-        // ✅ حفظ تلقائي بعد المعالجة
         if (db) {
-            try {
-                toast("⏳ جاري الحفظ...", "");
-                await Promise.all([
-                    setDoc(firestoreDoc(db, 'site', 'content_en'), content.en),
-                    setDoc(firestoreDoc(db, 'site', 'content_ar'), content.ar),
-                ]);
-                toast("✅ تم رفع الصورة وحفظها!", "ok");
-            } catch (err) {
-                toast("❌ فشل الحفظ: " + err.message, "err");
-            }
-        } else {
-            toast("✅ الصورة جاهزة — اضغطي حفظ", "ok");
+            toast("⏳ جاري الحفظ...", "");
+            await Promise.all([
+                setDoc(firestoreDoc(db, 'site', 'content_en'), content.en),
+                setDoc(firestoreDoc(db, 'site', 'content_ar'), content.ar),
+            ]);
+            toast("✅ تم رفع الصورة وحفظها بنجاح!", "ok");
         }
-    };
-
-    img.src = objectUrl;
+    } catch (err) {
+        toast("❌ فشل الرفع: " + err.message, "err");
+    }
 };
 
 window.removeHeroBg = function () {
@@ -487,17 +466,19 @@ function renderTools() {
     });
 }
 
-// ✅ رفع صورة الأداة — base64
-window.uploadToolImg = function (e, i) {
+// 🖼️ أداة رفع الأدوات - Cloudinary
+window.uploadToolImg = async function (e, i) {
     const file = e.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-        if (content.en.tools[i]) content.en.tools[i].value = ev.target.result;
-        if (content.ar.tools[i]) content.ar.tools[i].value = ev.target.result;
+    try {
+        toast("⏳ جاري رفع الأداة للسيرفر السحابي...", "");
+        const url = await uploadImageProfessional(file);
+        if (content.en.tools[i]) content.en.tools[i].value = url;
+        if (content.ar.tools[i]) content.ar.tools[i].value = url;
         renderTools();
-        toast("✅ تم تحميل صورة الأداة", "ok");
-    };
-    reader.readAsDataURL(file);
+        toast("✅ تم تحميل صورة الأداة بنجاح", "ok");
+    } catch(err) {
+        toast("❌ فشل: " + err.message, "err");
+    }
 };
 
 window.addTool = () => {
@@ -559,12 +540,12 @@ function renderStories() {
     });
 }
 
-// ✅ رفع صورة القصة — Firebase Storage بدل base64
+// 🖼️ رفع صورة القصة — Cloudinary
 window.uploadStoryImg = async function (e, i) {
     const file = e.target.files[0]; if (!file) return;
     try {
-        toast("⏳ جاري رفع صورة القصة...", "");
-        const url = await uploadToStorage(file, "stories");
+        toast("⏳ جاري رفع صورة القصة للسيرفر السحابي...", "");
+        const url = await uploadImageProfessional(file);
         if (content.en.stories[i]) content.en.stories[i].imageUrl = url;
         if (content.ar.stories[i]) content.ar.stories[i].imageUrl = url;
         renderStories();
@@ -618,10 +599,9 @@ window.changePass = () => {
 // ==========================================
 // 9. إدارة المدونة (Blog Management)
 // ==========================================
-let blogPosts = []; // ✅ تُحمَّل من Firestore وليس localStorage
+let blogPosts = []; 
 let currentBlogCover = '';
 
-// ✅ جلب المقالات من Firestore عند تحميل لوحة التحكم
 async function loadBlogPosts() {
     if (!db) return;
     try {
@@ -666,9 +646,6 @@ window.openBlogEditor = (index) => {
     currentBlogCover = '';
     document.getElementById('postCover').value = '';
     document.getElementById('coverPreview').style.display = 'none';
-
-    const oldPreview = document.getElementById('inlineImgsPreview');
-    if (oldPreview) oldPreview.remove();
 
     if (index >= 0) {
         const p = blogPosts[index];
@@ -766,7 +743,7 @@ window.deleteBlogPost = async (i) => {
         if (blogPosts[i].firestoreId) {
             await deleteDoc(doc(db, 'blog_posts', blogPosts[i].firestoreId));
         }
-        await loadBlogPosts(); // ✅ أعد تحميل القائمة
+        await loadBlogPosts();
         toast('🗑 تم الحذف', 'ok');
     } catch (e) {
         toast('❌ فشل الحذف: ' + e.message, 'err');
@@ -810,66 +787,72 @@ window.insertBlogFormat = (type, editorId = 'postContent') => {
 };
 
 // ==========================================
-// ✅ ربط أحداث الصور (Image Event Bindings)
+// 🌟 ربط أحداث الصور الاحترافية (Cloudinary) 🌟
 // ==========================================
 function bindImageEvents() {
 
-    // ✅ صورة الغلاف — base64
-    document.getElementById('postCover')?.addEventListener('change', (e) => {
+    // 🖼️ صورة الغلاف للمقال
+    document.getElementById('postCover')?.addEventListener('change', async (e) => {
         const file = e.target.files[0]; if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            currentBlogCover = ev.target.result;
+        try {
+            toast("⏳ جاري رفع صورة الغلاف للسيرفر...", "");
+            const url = await uploadImageProfessional(file);
+            currentBlogCover = url;
             const prev = document.getElementById('coverPreview');
             if (prev) { prev.src = currentBlogCover; prev.style.display = 'block'; }
-            toast("✅ تم تحميل صورة الغلاف", "ok");
-        };
-        reader.readAsDataURL(file);
+            toast("✅ تم رفع صورة الغلاف بنجاح", "ok");
+        } catch (err) {
+            toast("❌ فشل الرفع: " + err.message, "err");
+        }
     });
 
-    // دالة مساعدة لإدراج صورة في محرر معين
-    function insertImgInEditor(editorId, file) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const url = ev.target.result;
-            const editor = document.getElementById(editorId);
-            if (!editor) return;
-            editor.focus();
+    // دالة مساعدة لإدراج الصورة في المحرر
+    function insertImgUrlInEditor(editorId, url) {
+        const editor = document.getElementById(editorId);
+        if (!editor) return;
+        editor.focus();
 
-            const img = document.createElement('img');
-            img.src = url;
-            img.alt = "صورة توضيحية";
-            img.style.cssText = `max-width:100%; border-radius:8px; display:block; margin:12px auto; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.15);`;
-            img.title = "انقري مرتين للحذف";
-            img.ondblclick = () => { if (confirm('حذف هذه الصورة؟')) img.remove(); };
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = "صورة توضيحية";
+        img.style.cssText = `max-width:100%; border-radius:8px; display:block; margin:12px auto; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.15);`;
+        img.title = "انقري مرتين للحذف";
+        img.ondblclick = () => { if (confirm('حذف هذه الصورة؟')) img.remove(); };
 
-            const sel = window.getSelection();
-            if (sel.rangeCount && editor.contains(sel.anchorNode)) {
-                const range = sel.getRangeAt(0);
-                range.insertNode(img);
-                range.setStartAfter(img);
-                range.collapse(true);
-                sel.removeAllRanges();
-                sel.addRange(range);
-            } else {
-                editor.appendChild(img);
-            }
-            toast("✅ الصورة أُدرجت", "ok");
-        };
-        reader.readAsDataURL(file);
+        const sel = window.getSelection();
+        if (sel.rangeCount && editor.contains(sel.anchorNode)) {
+            const range = sel.getRangeAt(0);
+            range.insertNode(img);
+            range.setStartAfter(img);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        } else {
+            editor.appendChild(img);
+        }
     }
 
-    // ✅ صورة داخل المقال الإنجليزي
-    document.getElementById('inlineImgUpload')?.addEventListener('change', (e) => {
+    // 🖼️ صورة داخل المقال الإنجليزي
+    document.getElementById('inlineImgUpload')?.addEventListener('change', async (e) => {
         const file = e.target.files[0]; if (!file) return;
-        insertImgInEditor('postContent', file);
+        try {
+            toast("⏳ جاري رفع الصورة...", "");
+            const url = await uploadImageProfessional(file);
+            insertImgUrlInEditor('postContent', url);
+            toast("✅ أُدرجت الصورة في المقال", "ok");
+        } catch (err) { toast("❌ فشل: " + err.message, "err"); }
         e.target.value = '';
     });
 
-    // ✅ صورة داخل المقال العربي
-    document.getElementById('inlineImgUploadAr')?.addEventListener('change', (e) => {
+    // 🖼️ صورة داخل المقال العربي
+    document.getElementById('inlineImgUploadAr')?.addEventListener('change', async (e) => {
         const file = e.target.files[0]; if (!file) return;
-        insertImgInEditor('postContentAr', file);
+        try {
+            toast("⏳ جاري رفع الصورة...", "");
+            const url = await uploadImageProfessional(file);
+            insertImgUrlInEditor('postContentAr', url);
+            toast("✅ أُدرجت الصورة في المقال", "ok");
+        } catch (err) { toast("❌ فشل: " + err.message, "err"); }
         e.target.value = '';
     });
 }
