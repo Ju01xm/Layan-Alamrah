@@ -2,7 +2,6 @@
     font-family: 'Ara Hamah';
     src: url('fonts/Ara Hamah 1964 R Regular.otf') format('opentype');
     font-weight: normal;
-    /* الوزن العادي */
     font-style: normal;
 }
 
@@ -241,7 +240,6 @@ a {
         opacity: 0;
         transform: translateY(20px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -352,7 +350,6 @@ a {
         opacity: 0;
         transform: translateY(30px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -434,36 +431,59 @@ a {
     margin: 2.5rem 0;
 }
 
+/* ==========================================
+   ✨ تنسيقات نصوص المقال المحدثة (أصغر قليلاً ومتناسقة) ✨
+   ========================================== */
 .newsletter-content {
-    font-size: 1rem;
-    line-height: 1.9;
-    color: #333;
-    font-family: 'Ara Hamah', sans-serif;
+    font-size: 0.95rem; /* تصغير الخط الإنجليزي قليلاً */
+    line-height: 2;
+    color: #1a1a1a;
 }
 
+/* 🌟 حجم الخط للغة العربية 🌟 */
+html[dir="rtl"] .newsletter-content {
+    font-size: 1rem; /* تصغير الخط العربي ليكون أرتب */
+    line-height: 2.1;
+}
+
+/* 🌟🌟 إجبار النصوص المنسوخة على أخذ خط الموقع 🌟🌟 */
+.newsletter-content,
+.newsletter-content * {
+    font-family: 'Ara Hamah', sans-serif !important;
+}
+
+.newsletter-content p,
+.newsletter-content div,
+.newsletter-content span {
+    margin-bottom: 1.3rem;
+    font-size: inherit !important; 
+    line-height: inherit !important;
+}
+
+/* تنسيق العناوين الجانبية (H2) */
 .newsletter-content h2 {
-    font-size: 1.4rem;
+    font-size: 1.3rem !important; /* تصغير العناوين لتتناسب مع النص */
     font-weight: 700;
-    color: var(--text-dark);
+    color: var(--accent-blue);
     margin: 2.5rem 0 1rem;
     padding-bottom: 0.5rem;
     border-bottom: 2px solid #f0f0f0;
 }
 
+/* تنسيق العناوين الفرعية (H3) */
 .newsletter-content h3 {
-    font-size: 1.15rem;
+    font-size: 1.15rem !important;
     font-weight: 600;
     color: var(--text-dark);
-    margin: 2rem 0 0.75rem;
+    margin: 2rem 0 0.8rem;
 }
 
-.newsletter-content p {
-    margin-bottom: 1.3rem;
-}
-
-.newsletter-content strong {
+/* 🌟🌟 حل مشكلة الخط العريض البولد (Bold) 🌟🌟 */
+.newsletter-content strong,
+.newsletter-content b {
     font-weight: 700;
-    color: var(--text-dark);
+    color: #000;
+    font-size: 1.15em !important; /* زيادة حجم الخط البولد 6% ليتساوى بصرياً مع الخط العادي */
 }
 
 .newsletter-content em {
@@ -471,33 +491,40 @@ a {
     color: #555;
 }
 
+/* تنسيق الاقتباسات */
 .newsletter-content blockquote {
-    background: #f8f8ff;
-    border-right: 4px solid var(--accent-blue);
+    background: rgba(64, 82, 255, 0.04);
+    border-left: 4px solid var(--accent-blue);
     padding: 1.2rem 1.5rem;
-    margin: 2rem 0;
+    margin: 2.5rem 0;
     border-radius: 0 12px 12px 0;
-    font-size: 1.05rem;
+    font-size: 1.05rem; /* تصغير الاقتباس للترتيب */
     color: #444;
-    font-style: italic;
     line-height: 1.8;
+}
+
+/* عكس اتجاه الاقتباس في اللغة العربية */
+html[dir="rtl"] .newsletter-content blockquote {
+    border-left: none;
+    border-right: 4px solid var(--accent-blue);
+    border-radius: 12px 0 0 12px;
 }
 
 .newsletter-content ul,
 .newsletter-content ol {
-    padding-right: 1.5rem;
-    margin-bottom: 1.3rem;
+    padding-inline-start: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .newsletter-content li {
-    margin-bottom: 0.5rem;
-    line-height: 1.7;
+    margin-bottom: 0.6rem;
+    line-height: 1.8;
 }
 
 .newsletter-content hr {
     border: none;
-    border-top: 1px dashed #ccc;
-    margin: 2.5rem 0;
+    border-top: 2px dashed #e5e5e5;
+    margin: 3rem 0;
 }
 
 /* Article Footer (Author info) */
